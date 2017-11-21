@@ -158,7 +158,51 @@ endmodule
 16 - 1 Multiplexers in all bit widths
 ======================================
 */
+module mux16to1_1bit( input in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in10,in11,in12,in13,in14,in15, input [3:0] sel, output reg muxOut );
+	always@(in0 , in1 , in2 , in3 , in4 , in5 , in6 , in7 , in8 , in9 , in10 , in11 , in12 , in13 , in14 , in15 , sel)
+	case (sel)
+				4'b0000: muxOut=in0;
+				4'b0001: muxOut=in1;
+				4'b0010: muxOut=in2;
+				4'b0011: muxOut=in3;
+				4'b0100: muxOut=in4;
+				4'b0101: muxOut=in5;
+				4'b0110: muxOut=in6;
+				4'b0111: muxOut=in7;
+				4'b1000: muxOut=in8;
+				4'b1001: muxOut=in9;
+				4'b1010: muxOut=in10;
+				4'b1011: muxOut=in11;
+				4'b1100: muxOut=in12;
+				4'b1101: muxOut=in13;
+				4'b1110: muxOut=in14;
+				4'b1111: muxOut=in15;
+	endcase
+endmodule	
+
 module mux16to1_16bits( input [15:0] in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in10,in11,in12,in13,in14,in15, input [3:0] sel, output reg [15:0] muxOut );
+	always@(in0 , in1 , in2 , in3 , in4 , in5 , in6 , in7 , in8 , in9 , in10 , in11 , in12 , in13 , in14 , in15 , sel)
+	case (sel)
+				4'b0000: muxOut=in0;
+				4'b0001: muxOut=in1;
+				4'b0010: muxOut=in2;
+				4'b0011: muxOut=in3;
+				4'b0100: muxOut=in4;
+				4'b0101: muxOut=in5;
+				4'b0110: muxOut=in6;
+				4'b0111: muxOut=in7;
+				4'b1000: muxOut=in8;
+				4'b1001: muxOut=in9;
+				4'b1010: muxOut=in10;
+				4'b1011: muxOut=in11;
+				4'b1100: muxOut=in12;
+				4'b1101: muxOut=in13;
+				4'b1110: muxOut=in14;
+				4'b1111: muxOut=in15;
+	endcase
+endmodule
+
+module mux16to1_20bits( input [19:0] in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in10,in11,in12,in13,in14,in15, input [3:0] sel, output reg [19:0] muxOut );
 	always@(in0 , in1 , in2 , in3 , in4 , in5 , in6 , in7 , in8 , in9 , in10 , in11 , in12 , in13 , in14 , in15 , sel)
 	case (sel)
 				4'b0000: muxOut=in0;
@@ -402,12 +446,16 @@ module signExt12to32( input [11:0] offset, output reg [15:0] signExtOffset);
 	end
 endmodule
 
+module comparator_20bits( input [19:0] in1, input [19:0] in2, output reg result);
+	assign result = (in1 == in2) ? 1'b1 : 1'b0;
+endmodule
+
 /*
 =====================================
 ALU Design
 ======================================
 */
-module ALU(input signed [31:0] aluIn1, input signed [31:0] aluIn2, input [2:0] aluOp, output reg [31:0] aluOut);
+module ALU(input signed [31:0] aluIn1, input signed [31:0] aluIn2, input [2:0] aluOp, output reg [31:0] aluOut, output reg zeroFlag);
 	always@(aluIn1 or aluIn2 or aluOp)
 	begin
 		case(aluOp)
@@ -416,6 +464,8 @@ module ALU(input signed [31:0] aluIn1, input signed [31:0] aluIn2, input [2:0] a
 			3'd2: aluOut = aluIn1 ^ aluIn2;
 			3'd3: aluOut = aluIn1 & aluIn2;
 		endcase
+	if( aluOut ) zeroFlag = 1'b1;
+	else zeroflag = 1'b0;
 	end
 endmodule
 
@@ -483,6 +533,11 @@ module Byte(input clk, input reset, input regWrite, input [7:0] d, output reg [7
 	D_ff v7 (clk,	reset,	regWrite,	d[7],	q[7]);
 endmodule
 
+module statusRegister_2Bytes(input clk, input reset, input regWrite, input [7:0] d, output reg [7:0] q);
+	Byte b0(clk, reset, regWrite, d[7:0], q[7:0]),
+		  b1(clk, reset, regWrite, d[15:8], q[15:8]);
+endmodule
+
 /*
 =====================================
 16 Bytes Data Register Block
@@ -541,7 +596,6 @@ module DataRegisterSet(input clk, input reset, input [15:0] regWrite, input [127
 endmodule
 
 
-
 /*
 =====================================
 16x19bits Tag Register Block
@@ -575,23 +629,37 @@ module TagRegisterSet(input clk, input reset, input [15:0] regWrite, input [19:0
 endmodule
 
 
-module CacheSet(input clk, input reset, input [15:0] lineWrite, input [19:0] inputTag, input [127:0] inputData);
+module CacheSet(input clk, input reset, input [15:0] lineWrite, input [19:0] inputTag, input [127:0] inputData,
+						input [15:0] validArray , input [15:0] dirtyArray, output reg [19:0] outTag, output reg[127:0] outData,
+						output reg outValid, output reg outDirty);
 
-	TagRegisterSet tagSet(clk,reset,lineWrite,inputTag,tag0,tag1,tag2,tag3,tag4,
-								tag5,tag6,tag7,tag8,tag9,tag10,
-								tag11,tag12,tag13,tag14,tag15);
+	wire [19:0] tag0,tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8,tag9,tag10,tag11,tag12,tag13,tag14,tag15;
+	wire [127:0] data0,data1,data2,data3,data4,data5,data6,data7,data8,data9,data10,data11,data12,data13,data14,data15;
+	wire [15:0] valid;
+	wire [15:0] dirty;
 	
+	TagRegisterSet tagSet(clk,reset,lineWrite,inputTag,tag0,tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8,tag9,tag10,
+								 tag11,tag12,tag13,tag14,tag15);
 	
-	mux16to1_16bits tagMux(tag0,tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8,tag9,tag10,tag11,tag12,tag13,tag14,tag15,index,outTag );
+	mux16to1_20bits tagMux(tag0,tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8,tag9,tag10,tag11,tag12,tag13,tag14,tag15,index,outTag);
 
-	
-	DataRegisterSet dataSet(clk,reset,lineWrite,inputData,data0,data1,data2,data3,data4,
-									data5,data6,data7,data8,data9,data10,
+	DataRegisterSet dataSet(clk,reset,lineWrite,inputData,data0,data1,data2,data3,data4,data5,data6,data7,data8,data9,data10,
 									data11,data12,data13,data14,data15);
 									
-	// add mux
+	mux16to1_128bits dataMux(data0,data1,data2,data3,data4,data5,data6,data7,data8,data9,data10,data11,data12,data13,data14,data15,index,outData);
+	
+	statusRegister_2Bytes validBits(clk, reset, lineWrite, validArray , valid);
+	mux16to1_1bit validBitMux(valid[0],valid[1],valid[2],valid[3],valid[4],valid[5],valid[6],valid[7],
+									  valid[8],valid[9],valid[10],valid[11],valid[12],valid[13],valid[14],valid[15],
+									  index,outValid);
+	
+	statusRegister_2Bytes dirtyBits(clk, reset, lineWrite, dirtyArray , dirty);
+	mux16to1_1bit dirtyBitMux(dirty[0],dirty[1],dirty[2],dirty[3],dirty[4],dirty[5],dirty[6],dirty[7],
+									  dirty[8],dirty[9],dirty[10],dirty[11],dirty[12],dirty[13],dirty[14],dirty[15],
+									  index,outDirty);
+									  
+	// Need to have a status register for the FIFO Counter								  
 
-		
 endmodule
 
 module testbench;
