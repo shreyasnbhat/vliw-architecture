@@ -593,6 +593,14 @@ module ALU(input signed [31:0] aluIn1, input signed [31:0] aluIn2, input [2:0] a
 endmodule
 
 
+module singleCycle(input clk, input reset, output [31:0] Result);
+		// Write Code here
+		// Test basic VLIW Single Cycle Datapath
+		// Need to implement Control Ckt
+		// PC Register , Adders, ALU, Register File, IM, SExt, Mux all implemented
+		
+endmodule
+
 /*
 =====================================
 Tag Register of 20 bits
