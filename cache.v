@@ -447,7 +447,9 @@ module signExt12to32( input [11:0] offset, output reg [15:0] signExtOffset);
 endmodule
 
 module comparator_20bits( input [19:0] in1, input [19:0] in2, output reg result);
-	assign result = (in1 == in2) ? 1'b1 : 1'b0;
+	always@(in1 or in2) begin
+		result = (in1 == in2) ? 1'b1 : 1'b0;
+	end
 endmodule
 
 /*
@@ -464,8 +466,11 @@ module ALU(input signed [31:0] aluIn1, input signed [31:0] aluIn2, input [2:0] a
 			3'd2: aluOut = aluIn1 ^ aluIn2;
 			3'd3: aluOut = aluIn1 & aluIn2;
 		endcase
-	if( aluOut ) zeroFlag = 1'b1;
-	else zeroflag = 1'b0;
+		
+		if( aluOut ) 
+			zeroFlag = 1'b1;
+		else 
+			zeroFlag = 1'b0;
 	end
 endmodule
 
