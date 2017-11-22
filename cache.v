@@ -525,7 +525,6 @@ module IM(input clk, input reset, input [3:0] pc_4bits, output reg [47:0] IR);
 	mux16to1_48bits mIM (Qout0,Qout1,Qout2,Qout3,Qout4,Qout5,Qout6,Qout7,Qout8,Qout9,Qout10,Qout11,Qout12,Qout13,Qout14,Qout15,pc_4bits,IR);
 endmodule
 
-
 /*
 =====================================
 Utility blocks
@@ -575,14 +574,14 @@ endmodule
 ALU Design
 ======================================
 */
-module ALU(input signed [31:0] aluIn1, input signed [31:0] aluIn2, input [2:0] aluOp, output reg [31:0] aluOut, output reg zeroFlag);
+module ALU(input signed [31:0] aluIn1, input signed [31:0] aluIn2, input [1:0] aluOp, output reg [31:0] aluOut, output reg zeroFlag);
 	always@(aluIn1 or aluIn2 or aluOp)
 	begin
 		case(aluOp)
-			3'd0: aluOut = aluIn1 << aluIn2;
-			3'd1:	aluOut = aluIn1 + aluIn2;
-			3'd2: aluOut = aluIn1 ^ aluIn2;
-			3'd3: aluOut = aluIn1 & aluIn2;
+			2'd0: aluOut = aluIn1 + aluIn2;
+			2'd1:	aluOut = aluIn1 << aluIn2;
+			2'd2: aluOut = aluIn1 ^ aluIn2;
+			2'd3: aluOut = aluIn1 & aluIn2;
 		endcase
 		
 		if( aluOut ) 
@@ -593,6 +592,161 @@ module ALU(input signed [31:0] aluIn1, input signed [31:0] aluIn2, input [2:0] a
 endmodule
 
 
+/*
+===========================================
+Control for the 32 bit instruction in VLIW
+===========================================
+*/
+module ctrlCkt_a(input [6:0] opcode, input [2:0] funct3,
+					  output reg [1:0] aluOp, output reg [1:0] aluSrcB,
+					  output reg branch,output reg memRd,output reg memWr,
+					  output reg regWr, output [1:0] destReg, output reg jump);
+	
+	always @ (opcode, funct3)
+		begin
+			aluOp = 2'b00; aluSrcB = 2'b00; branch = 1'b0;
+			if(opcode[1:0] == 2'b11)
+				begin
+					case(opcode[6:2])
+						5'b00100:
+							case(funct3)
+								3'b001:
+									begin
+									// slli
+										aluSrcB = 2'b01;
+										aluOp = 2'b01;
+										memRd=1'b0;
+										memWr=1'b0;
+										regWr=1'b1;
+										destReg = 2'b00;
+										branch = 1'b0;
+										jump = 1'b0;
+									end
+								3'b100:
+									begin
+									// xori
+										aluSrcB = 2'b10;
+										aluOp = 2'b10;
+										memRd=1'b0;
+										memWr=1'b0;
+										regWr=1'b1;
+										destReg = 2'b00;
+										branch = 1'b0;
+										jump = 1'b0;
+									end
+							endcase	
+						5'b01100:
+							begin
+							// add
+								aluSrcB = 2'b00;
+								aluOp = 2'b00;
+								memRd=1'b0;
+								memWr=1'b0;
+								regWr=1'b1;
+								destReg = 2'b00;
+								branch = 1'b0;
+								jump = 1'b0;
+							end
+						5'b11001:
+							begin
+							// jalr
+								aluSrcB = 2'b00;
+								aluOp = 2'b00;
+								memRd=1'b0;
+								memWr=1'b0;
+								regWr=1'b1;
+								destReg= 2'b01;
+								branch = 1'b0;
+								jump = 1'b1;
+							end
+						5'b00000:
+							begin
+							// lh
+								aluSrcB = 2'b10;
+								aluOp = 2'b00;
+								memRd=1'b1;
+								memWr=1'b0;
+								regWr=1'b1;
+								destReg=2'b10;
+								branch = 1'b0;
+								jump = 1'b0;
+							end
+						5'b11000:
+							begin
+							// beq
+								aluSrcB = 2'b00;
+								aluOp = 2'b00;
+								memRd=1'b0;
+								memWr=1'b0;
+								regWr=1'b0;
+								destReg=2'b11;
+								branch = 1'b1;
+								jump = 1'b0;
+							end
+					endcase
+				end
+		end				
+endmodule
+
+
+/*
+===========================================
+Control for the 16 bit instruction in VLIW
+===========================================
+*/
+module ctrlCkt_b(input [2:0] funct3_msb, input [1:0] op, input [1:0] funct2,
+					  input [2:0] funct3_lsb, output reg [1:0] aluOp, 
+					  output reg aluSrcB,output reg memRd,output reg rd_bSelect,
+					  output reg memWr,output reg regWr, output destReg);	
+						
+	always @ (opcode, {funct3_msb,funct3_lsb}, funct2)
+			begin
+				aluOp = 2'b00; aluSrcB = 1'b0;
+				case(op)
+					2'b01:
+						begin
+						if( funct3_msb == 3'b010 ) 
+							begin
+								// c.li
+								aluSrcB = 1'b0;
+								aluOp = 2'b00;
+								memRd=1'b0;
+								memWr=1'b0;
+								regWr=1'b1;
+								destReg=1'b1;
+								rd_bSelect=1'b0; 
+							end
+						else if( {funct3_msb,funct3_lsb} == 6'b100011 && funct == 2'b11 )
+							begin
+								// c.and
+								aluSrcB = 1'b0;
+								aluOp = 2'b11;
+								memRd=1'b0;
+								memWr=1'b0;
+								regWr=1'b1;
+								destReg=1'b0;
+								rd_bSelect=1'b1; 
+							end
+						end
+					2'b00: 
+						begin
+						if( funct3_msb == 3'b110 )
+							begin
+								 // c.sw
+								aluSrcB = 1'b1;
+								aluOp = 2'b00;
+								memRd=1'b0;
+								memWr=1'b1;
+								regWr=1'b0;
+								destReg=1'b0;
+								rd_bSelect=1'b1;
+							end
+						end
+				endcase
+			end	
+						
+endmodule	
+	
 module singleCycle(input clk, input reset, output [31:0] Result);
 		// Write Code here
 		// Test basic VLIW Single Cycle Datapath
