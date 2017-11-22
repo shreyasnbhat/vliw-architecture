@@ -503,9 +503,7 @@ endmodule
 module IM(input clk, input reset, input [3:0] pc_4bits, output reg [47:0] IR);
 	
 	wire [47:0] Qout0, Qout1, Qout2, Qout3, Qout4, Qout5, Qout6, Qout7,
-					Qout8, Qout9, Qout10, Qout11, Qout12, Qout13, Qout14, Qout15,
-					Qout16, Qout17, Qout18, Qout19, Qout20, Qout21, Qout22, Qout23,
-					Qout24, Qout25, Qout26, Qout27, Qout28, Qout29, Qout30, Qout31;
+					Qout8, Qout9, Qout10, Qout11, Qout12, Qout13, Qout14, Qout15;
 
 	VLIW_IM rIM0 (clk, reset, 48'h001101B38E75, Qout0); // add $3 ,$1,$2 || c.and $4,$5
 	VLIW_IM rIM1 (clk, reset, 48'h001101B38E75, Qout1); // add $3 ,$1,$2 || c.and $4,$5
@@ -523,11 +521,8 @@ module IM(input clk, input reset, input [3:0] pc_4bits, output reg [47:0] IR);
 	VLIW_IM rIM13 (clk, reset, 48'h000000000000, Qout13);
 	VLIW_IM rIM14 (clk, reset, 48'h000000000000, Qout14); 	
 	VLIW_IM rIM15 (clk, reset, 48'h000000000000, Qout15);
-	VLIW_IM rIM16 (clk, reset, 48'h000000000000, Qout16);
 	
-	mux16to1_48bits mIM (Qout0,Qout1,Qout2,Qout3,Qout4,Qout5,Qout6,Qout7,Qout8,Qout9,Qout10,Qout11,Qout12,Qout13,Qout14,Qout15,
-		Qout16,Qout17,Qout18,Qout19,Qout20,Qout21,Qout22,Qout23,Qout24,Qout25,Qout26,Qout27,Qout28,Qout29,Qout30,Qout31,
-		pc_4bits,IR);
+	mux16to1_48bits mIM (Qout0,Qout1,Qout2,Qout3,Qout4,Qout5,Qout6,Qout7,Qout8,Qout9,Qout10,Qout11,Qout12,Qout13,Qout14,Qout15,pc_4bits,IR);
 endmodule
 
 
