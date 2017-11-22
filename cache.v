@@ -33,6 +33,17 @@ module D_ff_registerFile (input clk, input reset, input regWrite, input decOut1b
 		end
 endmodule
 
+/*
+=====================================
+D flip flop for Instruction Memory
+======================================
+*/
+module D_ff_IM(input clk, input reset, input d, output reg q);
+	always@(reset or posedge clk)
+	if(reset)
+		q=d;
+endmodule
+
 
 /*
 =====================================
@@ -224,6 +235,30 @@ module mux16to1_20bits( input [19:0] in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in1
 	endcase
 endmodule
 
+module mux16to1_48bits(input [47:0] in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in10,in11,in12,in13,in14,in15,
+							  input [4:0] sel, output reg [47:0] muxOut );
+	
+	always@(in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in10,in11,in12,in13,in14,in15,sel)
+		case (sel)
+			4'd0: muxOut = in0;
+			4'd1: muxOut = in1;
+			4'd2: muxOut = in2;
+			4'd3: muxOut = in3;
+			4'd4: muxOut = in4;
+			4'd5: muxOut = in5;
+			4'd6: muxOut = in6;
+			4'd7: muxOut = in7;
+			4'd8: muxOut = in8;
+			4'd9: muxOut = in9;
+			4'd10: muxOut = in10;
+			4'd11: muxOut = in11;
+			4'd12: muxOut = in12;
+			4'd13: muxOut = in13;
+			4'd14: muxOut = in14;
+			4'd15: muxOut = in15;
+		endcase
+endmodule
+
 module mux16to1_128bits( input [127:0] in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in10,in11,in12,in13,in14,in15, input [3:0] sel, output reg [127:0] muxOut );
 	always@(in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in10,in11,in12,in13,in14,in15,sel)
 	case (sel)
@@ -407,6 +442,94 @@ module registerFile( input clk, input reset, input regWrite, input [4:0] rs1_a, 
 						 mux_rs2_b(rs2_b,outR0,outR1,outR2,outR3,outR4,outR5,outR6,outR7,outR8,outR9,outR10,outR11,outR12,outR13,outR14,outR15,outR16,outR17,outR18,outR19,outR20,outR21,outR22,outR23,outR24,outR25,outR26,outR27,outR28,outR29,outR30,outR31,out_rs2_b);
 	
 endmodule
+
+/*
+=====================================
+Instruction Memory Design
+=====================================
+*/
+module VLIW_IM(input clk, input reset, input [47:0] d, output reg [47:0] q);
+	D_ff_IM 	im_dff0(clk, reset, d[0], q[0]),
+				im_dff1(clk, reset, d[1], q[1]),
+				im_dff2(clk, reset, d[2], q[2]),
+				im_dff3(clk, reset, d[3], q[3]),
+				im_dff4(clk, reset, d[4], q[4]),
+				im_dff5(clk, reset, d[5], q[5]),
+				im_dff6(clk, reset, d[6], q[6]),
+				im_dff7(clk, reset, d[7], q[7]),
+				im_dff8(clk, reset, d[8], q[8]),
+				im_dff9(clk, reset, d[9], q[9]),
+				im_dff10(clk, reset, d[10], q[10]),
+				im_dff11(clk, reset, d[11], q[11]),
+				im_dff12(clk, reset, d[12], q[12]),
+				im_dff13(clk, reset, d[13], q[13]),
+				im_dff14(clk, reset, d[14], q[14]),
+				im_dff15(clk, reset, d[15], q[15]),
+				im_dff16(clk, reset, d[16], q[16]),
+				im_dff17(clk, reset, d[17], q[17]),
+				im_dff18(clk, reset, d[18], q[18]),
+				im_dff19(clk, reset, d[19], q[19]),
+				im_dff20(clk, reset, d[20], q[20]),
+				im_dff21(clk, reset, d[21], q[21]),
+				im_dff22(clk, reset, d[22], q[22]),
+				im_dff23(clk, reset, d[23], q[23]),
+				im_dff24(clk, reset, d[24], q[24]),
+				im_dff25(clk, reset, d[25], q[25]),
+				im_dff26(clk, reset, d[26], q[26]),
+				im_dff27(clk, reset, d[27], q[27]),
+				im_dff28(clk, reset, d[28], q[28]),
+				im_dff29(clk, reset, d[29], q[29]),
+				im_dff30(clk, reset, d[30], q[30]),
+				im_dff31(clk, reset, d[31], q[31]),
+				im_dff32(clk, reset, d[32], q[32]),
+				im_dff33(clk, reset, d[33], q[33]),
+				im_dff34(clk, reset, d[34], q[34]),
+				im_dff35(clk, reset, d[35], q[35]),
+				im_dff36(clk, reset, d[36], q[36]),
+				im_dff37(clk, reset, d[37], q[37]),
+				im_dff38(clk, reset, d[38], q[38]),
+				im_dff39(clk, reset, d[39], q[39]),
+				im_dff40(clk, reset, d[40], q[40]),
+				im_dff41(clk, reset, d[41], q[41]),
+				im_dff42(clk, reset, d[42], q[42]),
+				im_dff43(clk, reset, d[43], q[43]),
+				im_dff44(clk, reset, d[44], q[44]),
+				im_dff45(clk, reset, d[45], q[45]),
+				im_dff46(clk, reset, d[46], q[46]),
+				im_dff47(clk, reset, d[47], q[47]);
+				
+endmodule
+
+module IM(input clk, input reset, input [3:0] pc_4bits, output reg [47:0] IR);
+	
+	wire [47:0] Qout0, Qout1, Qout2, Qout3, Qout4, Qout5, Qout6, Qout7,
+					Qout8, Qout9, Qout10, Qout11, Qout12, Qout13, Qout14, Qout15,
+					Qout16, Qout17, Qout18, Qout19, Qout20, Qout21, Qout22, Qout23,
+					Qout24, Qout25, Qout26, Qout27, Qout28, Qout29, Qout30, Qout31;
+
+	VLIW_IM rIM0 (clk, reset, 48'h001101B38E75, Qout0); // add $3 ,$1,$2 || c.and $4,$5
+	VLIW_IM rIM1 (clk, reset, 48'h001101B38E75, Qout1); // add $3 ,$1,$2 || c.and $4,$5
+	VLIW_IM rIM2 (clk, reset, 48'h001101B38E75, Qout2); // add $3 ,$1,$2 || c.and $4,$5
+	VLIW_IM rIM3 (clk, reset, 48'h000000000000, Qout3); 
+	VLIW_IM rIM4 (clk, reset, 48'h000000000000, Qout4);
+	VLIW_IM rIM5 (clk, reset, 48'h000000000000, Qout5); 
+	VLIW_IM rIM6 (clk, reset, 48'h000000000000, Qout6); 
+	VLIW_IM rIM7 (clk, reset, 48'h000000000000, Qout7); 
+	VLIW_IM rIM8 (clk, reset, 48'h000000000000, Qout8);
+	VLIW_IM rIM9 (clk, reset, 48'h000000000000, Qout9); 
+	VLIW_IM rIM10 (clk, reset, 48'h000000000000, Qout10); 	
+	VLIW_IM rIM11 (clk, reset, 48'h000000000000, Qout11); 
+	VLIW_IM rIM12 (clk, reset, 48'h000000000000, Qout12); 
+	VLIW_IM rIM13 (clk, reset, 48'h000000000000, Qout13);
+	VLIW_IM rIM14 (clk, reset, 48'h000000000000, Qout14); 	
+	VLIW_IM rIM15 (clk, reset, 48'h000000000000, Qout15);
+	VLIW_IM rIM16 (clk, reset, 48'h000000000000, Qout16);
+	
+	mux16to1_48bits mIM (Qout0,Qout1,Qout2,Qout3,Qout4,Qout5,Qout6,Qout7,Qout8,Qout9,Qout10,Qout11,Qout12,Qout13,Qout14,Qout15,
+		Qout16,Qout17,Qout18,Qout19,Qout20,Qout21,Qout22,Qout23,Qout24,Qout25,Qout26,Qout27,Qout28,Qout29,Qout30,Qout31,
+		pc_4bits,IR);
+endmodule
+
 
 /*
 =====================================
