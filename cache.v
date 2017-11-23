@@ -137,6 +137,16 @@ module mux2to1_4bits(input [3:0] in1,in2, input sel, output reg [3:0] muxOut);
 	 end
 endmodule
 
+module mux2to1_5bits(input [4:0] in1,in2, input sel, output reg [4:0] muxOut);
+	 always@(in1 , in2 , sel)
+	 begin
+		case(sel)
+			2'b0 : muxOut = in1;
+			2'b1 : muxOut = in2;
+		endcase
+	 end
+endmodule
+
 module mux2to1_32bits(input [31:0] in1,in2, input sel, output reg [31:0] muxOut);
 	 always@(in1 , in2 , sel)
 	 begin
@@ -153,6 +163,18 @@ endmodule
 ======================================
 */
 module mux4to1_16bits(input [15:0] in1,in2,in3,in4, input [1:0] sel,output reg [15:0] muxOut);
+	 always@(in1 , in2 , in3 , in4 , sel)
+	 begin
+		case(sel)
+			2'b00 : muxOut = in1;
+			2'b01 : muxOut = in2;
+			2'b10 : muxOut = in3;
+			2'b11 : muxOut = in4;
+		endcase
+	 end
+endmodule
+
+module mux4to1_32bits(input [31:0] in1,in2,in3,in4, input [1:0] sel,output reg [31:0] muxOut);
 	 always@(in1 , in2 , in3 , in4 , sel)
 	 begin
 		case(sel)
@@ -236,7 +258,7 @@ module mux16to1_20bits( input [19:0] in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in1
 endmodule
 
 module mux16to1_48bits(input [47:0] in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in10,in11,in12,in13,in14,in15,
-							  input [4:0] sel, output reg [47:0] muxOut );
+							  input [3:0] sel, output reg [47:0] muxOut );
 	
 	always@(in0,in1,in2,in3,in4,in5,in6,in7,in8,in9,in10,in11,in12,in13,in14,in15,sel)
 		case (sel)
@@ -331,6 +353,46 @@ endmodule
 Register File Design
 ======================================
 */
+module register32bit_PC( input clk, input reset, input regWrite, input decOut1b, input [31:0] writeData, output  [31:0] outR );
+	
+	D_ff_registerFile d00(clk, reset, regWrite, decOut1b, writeData[0], outR[0]);
+	D_ff_registerFile d01(clk, reset, regWrite, decOut1b, writeData[1], outR[1]);
+	D_ff_registerFile d02(clk, reset, regWrite, decOut1b, writeData[2], outR[2]);
+	D_ff_registerFile d03(clk, reset, regWrite, decOut1b, writeData[3], outR[3]);
+	D_ff_registerFile d04(clk, reset, regWrite, decOut1b, writeData[4], outR[4]);
+	D_ff_registerFile d05(clk, reset, regWrite, decOut1b, writeData[5], outR[5]);
+	D_ff_registerFile d06(clk, reset, regWrite, decOut1b, writeData[6], outR[6]);
+	D_ff_registerFile d07(clk, reset, regWrite, decOut1b, writeData[7], outR[7]);
+	D_ff_registerFile d08(clk, reset, regWrite, decOut1b, writeData[8], outR[8]);
+	D_ff_registerFile d09(clk, reset, regWrite, decOut1b, writeData[9], outR[9]);
+	D_ff_registerFile d10(clk, reset, regWrite, decOut1b, writeData[10], outR[10]);
+	D_ff_registerFile d11(clk, reset, regWrite, decOut1b, writeData[11], outR[11]);
+	D_ff_registerFile d12(clk, reset, regWrite, decOut1b, writeData[12], outR[12]);
+	D_ff_registerFile d13(clk, reset, regWrite, decOut1b, writeData[13], outR[13]);
+	D_ff_registerFile d14(clk, reset, regWrite, decOut1b, writeData[14], outR[14]);
+	D_ff_registerFile d15(clk, reset, regWrite, decOut1b, writeData[15], outR[15]);
+	
+	D_ff_registerFile d16(clk, reset, regWrite, decOut1b, writeData[16], outR[16]);
+	D_ff_registerFile d17(clk, reset, regWrite, decOut1b, writeData[17], outR[17]);
+	D_ff_registerFile d18(clk, reset, regWrite, decOut1b, writeData[18], outR[18]);
+	D_ff_registerFile d19(clk, reset, regWrite, decOut1b, writeData[19], outR[19]);
+	D_ff_registerFile d20(clk, reset, regWrite, decOut1b, writeData[20], outR[20]);
+	D_ff_registerFile d21(clk, reset, regWrite, decOut1b, writeData[21], outR[21]);
+	D_ff_registerFile d22(clk, reset, regWrite, decOut1b, writeData[22], outR[22]);
+	D_ff_registerFile d23(clk, reset, regWrite, decOut1b, writeData[23], outR[23]);
+	D_ff_registerFile d24(clk, reset, regWrite, decOut1b, writeData[24], outR[24]);
+	D_ff_registerFile d25(clk, reset, regWrite, decOut1b, writeData[25], outR[25]);
+	D_ff_registerFile d26(clk, reset, regWrite, decOut1b, writeData[26], outR[26]);
+	D_ff_registerFile d27(clk, reset, regWrite, decOut1b, writeData[27], outR[27]);
+	D_ff_registerFile d28(clk, reset, regWrite, decOut1b, writeData[28], outR[28]);
+	D_ff_registerFile d29(clk, reset, regWrite, decOut1b, writeData[29], outR[29]);
+	D_ff_registerFile d30(clk, reset, regWrite, decOut1b, writeData[30], outR[30]);
+	D_ff_registerFile d31(clk, reset, regWrite, decOut1b, writeData[31], outR[31]);
+	
+	
+endmodule
+
+
 module registerFileRegister32bits(input clk, input reset, input regWrite, input decOut1b, input decOut_final,
 											 input [31:0] writeData_a,input [31:0] writeData_b, output  [31:0] outR);
 	  
@@ -377,8 +439,8 @@ module registerSet( input clk, input reset, input regWrite, input [31:0] decOut,
 						  input [31:0] writeData_a,input [31:0] writeData_b,output [31:0] outR0,outR1,outR2,outR3,
 						  outR4,outR5,outR6,outR7,outR8,outR9,outR10,outR11,outR12,outR13,
 						  outR14,outR15,outR16,outR17,outR18,outR19,outR20,outR21,outR22,
-						  outR23,outR24,outR25,outR26,outR27,outR28,outR29,outR30,outR31);
-
+						  outR23,outR24,outR25,outR26,outR27,outR28,outR29,outR30,outR31); 
+		
 		registerFileRegister32bits r1 (clk, reset, regWrite, decOut[0] , 	decOutfinal[0],	writeData_a , writeData_b, outR0),
 											r2 (clk, reset, regWrite, decOut[1] , 	decOutfinal[1], writeData_a , writeData_b ,outR1 ),
 											r3 (clk, reset, regWrite, decOut[2] , 	decOutfinal[2], writeData_a , writeData_b ,outR2 ),
@@ -448,7 +510,7 @@ endmodule
 Instruction Memory Design
 =====================================
 */
-module VLIW_IM(input clk, input reset, input [47:0] d, output reg [47:0] q);
+module VLIW_IM(input clk, input reset, input [47:0] d, output [47:0] q);
 	D_ff_IM 	im_dff0(clk, reset, d[0], q[0]),
 				im_dff1(clk, reset, d[1], q[1]),
 				im_dff2(clk, reset, d[2], q[2]),
@@ -500,12 +562,12 @@ module VLIW_IM(input clk, input reset, input [47:0] d, output reg [47:0] q);
 				
 endmodule
 
-module IM(input clk, input reset, input [3:0] pc_4bits, output reg [47:0] IR);
+module IM(input clk, input reset, input [3:0] pc_4bits, output [47:0] IR);
 	
 	wire [47:0] Qout0, Qout1, Qout2, Qout3, Qout4, Qout5, Qout6, Qout7,
 					Qout8, Qout9, Qout10, Qout11, Qout12, Qout13, Qout14, Qout15;
 
-	VLIW_IM rIM0 (clk, reset, 48'h001101B38E75, Qout0); // add $3 ,$1,$2 || c.and $4,$5
+	VLIW_IM rIM0 (clk, reset, 48'h0000000040C5, Qout0); //  nop|| c.li $1,$9  
 	VLIW_IM rIM1 (clk, reset, 48'h001101B38E75, Qout1); // add $3 ,$1,$2 || c.and $4,$5
 	VLIW_IM rIM2 (clk, reset, 48'h001101B38E75, Qout2); // add $3 ,$1,$2 || c.and $4,$5
 	VLIW_IM rIM3 (clk, reset, 48'h000000000000, Qout3); 
@@ -525,12 +587,18 @@ module IM(input clk, input reset, input [3:0] pc_4bits, output reg [47:0] IR);
 	mux16to1_48bits mIM (Qout0,Qout1,Qout2,Qout3,Qout4,Qout5,Qout6,Qout7,Qout8,Qout9,Qout10,Qout11,Qout12,Qout13,Qout14,Qout15,pc_4bits,IR);
 endmodule
 
+
 /*
 =====================================
 Utility blocks
 ======================================
 */
-module adder(input [15:0] in1, input [15:0] in2, output reg [15:0] adder_out);
+module adder16(input [15:0] in1, input [15:0] in2, output reg [15:0] adder_out);
+	always@(in1 , in2)
+		adder_out = in1 +in2;
+endmodule
+
+module adder32(input [31:0] in1, input [31:0] in2, output reg [31:0] adder_out);
 	always@(in1 , in2)
 		adder_out = in1 +in2;
 endmodule
@@ -549,14 +617,14 @@ module signExt6to32( input [5:0] offset, output reg [31:0] signExtOffset);
 	end
 endmodule
 
-module signExt13to32( input [12:0] offset, output reg [15:0] signExtOffset);
+module signExt13to32( input [12:0] offset, output reg [31:0] signExtOffset);
 	always@(offset)
 	begin
 			signExtOffset={{19{offset[12]}},offset[12:0]};
 	end
 endmodule
 
-module signExt12to32( input [11:0] offset, output reg [15:0] signExtOffset);
+module signExt12to32( input [11:0] offset, output reg [31:0] signExtOffset);
 	always@(offset)
 	begin
 			signExtOffset={{20{offset[11]}},offset[11:0]};
@@ -578,8 +646,8 @@ module ALU(input signed [31:0] aluIn1, input signed [31:0] aluIn2, input [1:0] a
 	always@(aluIn1 or aluIn2 or aluOp)
 	begin
 		case(aluOp)
-			2'd0: aluOut = aluIn1 + aluIn2;
-			2'd1:	aluOut = aluIn1 << aluIn2;
+			2'd0: aluOut = aluIn1 << aluIn2;
+			2'd1:	aluOut = aluIn1 + aluIn2;
 			2'd2: aluOut = aluIn1 ^ aluIn2;
 			2'd3: aluOut = aluIn1 & aluIn2;
 		endcase
@@ -591,7 +659,6 @@ module ALU(input signed [31:0] aluIn1, input signed [31:0] aluIn2, input [1:0] a
 	end
 endmodule
 
-
 /*
 ===========================================
 Control for the 32 bit instruction in VLIW
@@ -600,7 +667,7 @@ Control for the 32 bit instruction in VLIW
 module ctrlCkt_a(input [6:0] opcode, input [2:0] funct3,
 					  output reg [1:0] aluOp, output reg [1:0] aluSrcB,
 					  output reg branch,output reg memRd,output reg memWr,
-					  output reg regWr, output [1:0] destReg, output reg jump);
+					  output reg regWr, output reg [1:0] destReg, output reg jump);
 	
 	always @ (opcode, funct3)
 		begin
@@ -697,9 +764,9 @@ Control for the 16 bit instruction in VLIW
 module ctrlCkt_b(input [2:0] funct3_msb, input [1:0] op, input [1:0] funct2,
 					  input [2:0] funct3_lsb, output reg [1:0] aluOp, 
 					  output reg aluSrcB,output reg memRd,output reg rd_bSelect,
-					  output reg memWr,output reg regWr, output destReg);	
+					  output reg memWr,output reg regWr, output reg destReg);	
 						
-	always @ (opcode, {funct3_msb,funct3_lsb}, funct2)
+	always @ (op, {funct3_msb,funct3_lsb}, funct2)
 			begin
 				aluOp = 2'b00; aluSrcB = 1'b0;
 				case(op)
@@ -716,7 +783,7 @@ module ctrlCkt_b(input [2:0] funct3_msb, input [1:0] op, input [1:0] funct2,
 								destReg=1'b1;
 								rd_bSelect=1'b0; 
 							end
-						else if( {funct3_msb,funct3_lsb} == 6'b100011 && funct == 2'b11 )
+						else if( {funct3_msb,funct3_lsb} == 6'b100011 && funct2 == 2'b11 )
 							begin
 								// c.and
 								aluSrcB = 1'b0;
@@ -746,14 +813,7 @@ module ctrlCkt_b(input [2:0] funct3_msb, input [1:0] op, input [1:0] funct2,
 			end	
 						
 endmodule	
-	
-module singleCycle(input clk, input reset, output [31:0] Result);
-		// Write Code here
-		// Test basic VLIW Single Cycle Datapath
-		// Need to implement Control Ckt
-		// PC Register , Adders, ALU, Register File, IM, SExt, Mux all implemented
-		
-endmodule
+
 
 /*
 =====================================
@@ -947,34 +1007,102 @@ module CacheSet(input clk, input reset, input [15:0] lineWrite, input [19:0] inp
 
 endmodule
 
+/*
+===========================================
+Single Cycle Implementation
+===========================================
+*/
+module singleCycle(input clk, input reset, output [31:0] Result);
+		// Write Code here
+		// Test basic VLIW Single Cycle Datapath
+		// Need to implement Control Ckt
+		// PC Register , Adders, ALU, Register File, IM, SExt, Mux all implemented
+	wire regWrite;
+	wire decOut1b;
+	wire [31:0] pcOut;
+	wire [31:0] adderOut; 
+	wire [31:0] muxOutPC, beq_add, aluOut1,aluOut2;
+	wire [47:0] IR;
+	wire [1:0] PCSrc;
+	wire [31:0] memOut;
+	register32bit_PC pc( clk, reset, 1'b1, 1'b1, muxOutPC, pcOut);
+	
+	// 32'd1 assuming IM is has 48 bit registers
+	adder32 add(32'd1, pcOut, adderOut);
+	
+	// in2 should be beq_Add
+	mux4to1_32bits mux0(adderOut,aluOut1,32'd0,32'd0, 2'b00, muxOutPC);
+	
+	IM imem(clk, reset,pcOut[3:0],IR);
+	
+	//CtrlCkt
+	wire [1:0] aluOp1,aluSrcB1,destReg1;
+	wire branch1, memRd1, memWr1,regWr1,jump1;
+	
+	ctrlCkt_a ctrl_a( IR[22:16], IR[30:28], aluOp1, aluSrcB1, branch1, memRd1, memWr1, regWr1,  destReg1, jump1);
+	
+	wire[1:0] aluOp2;
+	wire aluSrcB2,memRd2,rd_bSelect2,memWr2,regWr2,destReg2;
+	
+	ctrlCkt_b ctrl_b(IR[15:13], IR[1:0], IR[6:5], IR[12:10], aluOp2, aluSrcB2,memRd2,rd_bSelect2, memWr2,regWr2, destReg2);	
+					  
+	wire[4:0] rd_b;
+	mux2to1_5bits sel_rd_b(IR[11:7],{2'b00, IR[9:7]},rd_bSelect2, rd_b);
+	
+	wire [31:0] mux_in_beq;
+	signExt13to32 beq( {IR[47],IR[23],IR[46:41], IR[27:24],1'b0}, mux_in_beq);
+	
+	wire [31:0] wd_a, wd_b;
+	// in3 should memOut
+	mux4to1_32bits wdA_selector(aluOut1,adderOut,32'd0,mux_in_beq, destReg1,wd_a);
+	
+	wire [31:0] mux_in2;
+	signExt6to32 cli({IR[12], IR[6:2]}, mux_in2);
+	mux2to1_32bits wdB_selector(aluOut2,mux_in2, destReg2, wd_b);
+	
+	wire [31:0] out_rs1_a,out_rs2_a,out_rs2_b,out_rs1_b;
+	
+	registerFile rf( clk, reset, regWr1 | regWr2 , IR[35:31], IR[40:36], {2'b00,IR[9:7]}, {2'b00, IR[4:2]},
+							IR[27:23],rd_b, wd_a, wd_b, out_rs1_a,
+							out_rs2_a, out_rs1_b, out_rs2_b);
+		
+	wire [31:0] mux_xor;
+	signExt12to32 xori(IR[47:36], mux_xor);
+	
+	wire [31:0] alu1_inputB;
+	mux4to1_32bits alu_a_selector(out_rs2_a,{27'd0,IR[40:36]},mux_xor,{mux_xor[30:0],1'b0}, aluSrcB1,alu1_inputB);
+	
+	wire zeroFlag;
+	ALU alu_a(out_rs1_a, alu1_inputB, aluOp1, aluOut1, zeroFlag);
+	
+	//adder32 add01(pcOut, input [31:0] in2, output reg [31:0] adder_out);
+	
+	wire [31:0] alu2_inputB;
+	mux2to1_32bits alu_b_selector(out_rs2_b,{25'b0,IR[6:2],2'b0}, aluSrcB2,alu2_inputB);
+	
+	wire zeroFlagx;
+	ALU alu_b(out_rs1_b, alu2_inputB, aluOp2,aluOut2, zeroFlagx);
+	
+	assign Result = aluOut1;
+	
+endmodule	
+
+
 module testbench;
 	// Input
-	reg clk, reset, regWrite;
-	reg [4:0] rs1_a, rs2_a,rd_a,rs1_b,rs2_b,rd_b;
-	reg [31:0] writeData_a;
-	reg [31:0] writeData_b;
-	// Output
-	wire [31:0] rs1_A, rs1_B, rs2_A, rs2_B;
+	reg clk, reset;
+	wire [31:0] Result;
 	
-	registerFile r1( clk,  reset,  regWrite,  rs1_a,   rs2_a,  rs1_b,  rs2_b, rd_a, rd_b,writeData_a, writeData_b,  rs1_A,	rs2_A, rs1_B, rs2_B);
+	singleCycle singleC(clk, reset, Result);
 	
 	always
 		#5 clk=~clk;
 	initial
 		begin
-			clk=0;reset=1; rs1_a=5'd0; rs1_b=5'd1; rs2_a=5'd2; rs2_b=5'd3; rd_a=5'd4; rd_b=5'd5; regWrite=1; writeData_a=32'hAAAAAAAA; writeData_b=32'hBBBBBBBB;
+			clk=0;reset=1; 
 			#5 reset=0;
-			#10 rs1_a=5'd4; rs1_b=5'd6; rs2_a=5'd18; rs2_b=5'd16; rd_a=5'd13; rd_b=5'd12; regWrite=1; writeData_a=32'hDEADBEEF; writeData_b=32'hFFFFFFFF;
-			/*
-			#10 rs=4'd15; rt=4'd14; rd=4'd14; regWrite=1; writeData=32'h12345678;
-			#10 rs=4'd15; rt=4'd14; rd=4'd1; regWrite=1; writeData=32'hDEADBEEF;
-			#10 rs=4'd15; rt=4'd1; rd=4'd1; regWrite=1; writeData=32'h12345678;
-			#10 rs=4'd15; rt=4'd1; rd=4'd2; regWrite=1; writeData=32'hBABABABE;
-			#10 rs=4'd2; rt=4'd1; rd=4'd2; regWrite=0; writeData=32'h12345678;
-			#10 rs=4'd2; rt=4'd1; rd=4'd2; regWrite=0; writeData=32'h12345678;
-			*/
-			#10 $finish;
-		end
+			#100 $finish;
+			end
 endmodule
 
 
