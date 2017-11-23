@@ -567,11 +567,11 @@ module IM(input clk, input reset, input [3:0] pc_4bits, output [47:0] IR);
 	wire [47:0] Qout0, Qout1, Qout2, Qout3, Qout4, Qout5, Qout6, Qout7,
 					Qout8, Qout9, Qout10, Qout11, Qout12, Qout13, Qout14, Qout15;
 
-	VLIW_IM rIM0 (clk, reset, 48'h0000000040C5, Qout0); //  nop|| c.li $1,$9  
-	VLIW_IM rIM1 (clk, reset, 48'h001101B38E75, Qout1); // add $3 ,$1,$2 || c.and $4,$5
-	VLIW_IM rIM2 (clk, reset, 48'h001101B38E75, Qout2); // add $3 ,$1,$2 || c.and $4,$5
-	VLIW_IM rIM3 (clk, reset, 48'h000000000000, Qout3); 
-	VLIW_IM rIM4 (clk, reset, 48'h000000000000, Qout4);
+	VLIW_IM rIM0 (clk, reset, 48'h0000000040C5, Qout0); //  nop|| c.li $1,17  
+	VLIW_IM rIM1 (clk, reset, 48'h000000004109, Qout1); //  nop|| c.li $2,2 
+	VLIW_IM rIM2 (clk, reset, 48'h000000004211, Qout2); //  nop|| c.li $4,4 
+	VLIW_IM rIM3 (clk, reset, 48'h000000004295, Qout3); //  nop|| c.li $5,5 
+	VLIW_IM rIM4 (clk, reset, 48'h001101B38E75, Qout4); // add $3 ,$1,$2 || c.and $4,$5
 	VLIW_IM rIM5 (clk, reset, 48'h000000000000, Qout5); 
 	VLIW_IM rIM6 (clk, reset, 48'h000000000000, Qout6); 
 	VLIW_IM rIM7 (clk, reset, 48'h000000000000, Qout7); 
@@ -706,7 +706,7 @@ module ctrlCkt_a(input [6:0] opcode, input [2:0] funct3,
 							begin
 							// add
 								aluSrcB = 2'b00;
-								aluOp = 2'b00;
+								aluOp = 2'b01;
 								memRd=1'b0;
 								memWr=1'b0;
 								regWr=1'b1;
@@ -1013,77 +1013,80 @@ Single Cycle Implementation
 ===========================================
 */
 module singleCycle(input clk, input reset, output [31:0] Result);
-		// Write Code here
-		// Test basic VLIW Single Cycle Datapath
-		// Need to implement Control Ckt
-		// PC Register , Adders, ALU, Register File, IM, SExt, Mux all implemented
+
 	wire regWrite;
 	wire decOut1b;
 	wire [31:0] pcOut;
-	wire [31:0] adderOut; 
-	wire [31:0] muxOutPC, beq_add, aluOut1,aluOut2;
+	wire [31:0] nextPCAdderOut; 
+	wire [31:0] muxOutNextPC, beq_add, aluOut1,aluOut2;
 	wire [47:0] IR;
 	wire [1:0] PCSrc;
 	wire [31:0] memOut;
-	register32bit_PC pc( clk, reset, 1'b1, 1'b1, muxOutPC, pcOut);
 	
-	// 32'd1 assuming IM is has 48 bit registers
-	adder32 add(32'd1, pcOut, adderOut);
-	
-	// in2 should be beq_Add
-	mux4to1_32bits mux0(adderOut,aluOut1,32'd0,32'd0, 2'b00, muxOutPC);
-	
-	IM imem(clk, reset,pcOut[3:0],IR);
-	
-	//CtrlCkt
+	// Controls for 32 bit instruction region
 	wire [1:0] aluOp1,aluSrcB1,destReg1;
 	wire branch1, memRd1, memWr1,regWr1,jump1;
 	
-	ctrlCkt_a ctrl_a( IR[22:16], IR[30:28], aluOp1, aluSrcB1, branch1, memRd1, memWr1, regWr1,  destReg1, jump1);
-	
+	// Controls for 16 bit instruction region
 	wire[1:0] aluOp2;
 	wire aluSrcB2,memRd2,rd_bSelect2,memWr2,regWr2,destReg2;
-	
-	ctrlCkt_b ctrl_b(IR[15:13], IR[1:0], IR[6:5], IR[12:10], aluOp2, aluSrcB2,memRd2,rd_bSelect2, memWr2,regWr2, destReg2);	
-					  
+
+	// Register File inputs
 	wire[4:0] rd_b;
-	mux2to1_5bits sel_rd_b(IR[11:7],{2'b00, IR[9:7]},rd_bSelect2, rd_b);
-	
-	wire [31:0] mux_in_beq;
-	signExt13to32 beq( {IR[47],IR[23],IR[46:41], IR[27:24],1'b0}, mux_in_beq);
-	
-	wire [31:0] wd_a, wd_b;
-	// in3 should memOut
-	mux4to1_32bits wdA_selector(aluOut1,adderOut,32'd0,mux_in_beq, destReg1,wd_a);
-	
-	wire [31:0] mux_in2;
-	signExt6to32 cli({IR[12], IR[6:2]}, mux_in2);
-	mux2to1_32bits wdB_selector(aluOut2,mux_in2, destReg2, wd_b);
-	
-	wire [31:0] out_rs1_a,out_rs2_a,out_rs2_b,out_rs1_b;
-	
-	registerFile rf( clk, reset, regWr1 | regWr2 , IR[35:31], IR[40:36], {2'b00,IR[9:7]}, {2'b00, IR[4:2]},
-							IR[27:23],rd_b, wd_a, wd_b, out_rs1_a,
-							out_rs2_a, out_rs1_b, out_rs2_b);
-		
-	wire [31:0] mux_xor;
-	signExt12to32 xori(IR[47:36], mux_xor);
-	
+	wire [31:0] wd_a, wd_b,out_rs1_a,out_rs2_a,out_rs2_b,out_rs1_b;
+
+	wire [31:0] branch_address;
+	wire [31:0] cli_immediate6bits;
+	wire [31:0] immediate_12bits;
+
 	wire [31:0] alu1_inputB;
-	mux4to1_32bits alu_a_selector(out_rs2_a,{27'd0,IR[40:36]},mux_xor,{mux_xor[30:0],1'b0}, aluSrcB1,alu1_inputB);
-	
-	wire zeroFlag;
-	ALU alu_a(out_rs1_a, alu1_inputB, aluOp1, aluOut1, zeroFlag);
-	
-	//adder32 add01(pcOut, input [31:0] in2, output reg [31:0] adder_out);
-	
+	wire zeroFlag1;
+
 	wire [31:0] alu2_inputB;
-	mux2to1_32bits alu_b_selector(out_rs2_b,{25'b0,IR[6:2],2'b0}, aluSrcB2,alu2_inputB);
+	wire zeroFlag2;
+
+
+	register32bit_PC pc( clk, reset, 1'b1, 1'b1, muxOutNextPC, pcOut);
 	
-	wire zeroFlagx;
-	ALU alu_b(out_rs1_b, alu2_inputB, aluOp2,aluOut2, zeroFlagx);
+	// 32'd1 as IM is has 48 bit registers
+	adder32 add(32'd1, pcOut, nextPCAdderOut);
 	
+	// Mux Control needs to be generated
+	mux4to1_32bits mux0(nextPCAdderOut,aluOut1,beq_add,32'd0,2'b00, muxOutNextPC);
+	
+	// Instruction Memory
+	IM imem(clk, reset,pcOut[3:0],IR);
+	
+	// Control Signal Generation
+	ctrlCkt_a control_a( IR[22:16], IR[30:28], aluOp1, aluSrcB1, branch1, memRd1, memWr1, regWr1,  destReg1, jump1);
+	ctrlCkt_b control_b(IR[15:13], IR[1:0], IR[6:5], IR[12:10], aluOp2, aluSrcB2,memRd2,rd_bSelect2, memWr2,regWr2, destReg2);	
+					  
+	// Branch Address Computation
+	signExt13to32 beq_sext( {IR[47],IR[23],IR[46:41], IR[27:24],1'b0}, branch_address);
+	signExt6to32 cli_sext({IR[12], IR[6:2]}, cli_immediate6bits);
+
+	// Pre Register File Muxes
+	mux2to1_5bits select_rd_b(IR[11:7],{2'b00, IR[9:7]},rd_bSelect2, rd_b);
+	mux4to1_32bits select_wd_a(aluOut1,nextPCAdderOut,memOut,branch_address, destReg1,wd_a);
+	mux2to1_32bits select_wd_b(aluOut2,cli_immediate6bits, destReg2, wd_b);
+
+	registerFile reg_file( clk, reset, regWr1 | regWr2 , IR[35:31], IR[40:36], {2'b00,IR[9:7]}, {2'b00, IR[4:2]},
+							IR[27:23],rd_b, wd_a, wd_b, out_rs1_a, out_rs2_a, out_rs1_b, out_rs2_b);
+		
+	signExt12to32 imm12bits_sext(IR[47:36], immediate_12bits);
+	
+	// ALU InputB Muxes
+	mux4to1_32bits select_alu_a_inputB(out_rs2_a,{27'd0,IR[40:36]},immediate_12bits,{immediate_12bits[30:0],1'b0}, aluSrcB1,alu1_inputB);
+	mux2to1_32bits select_alu_b_inputB(out_rs2_b,{25'b0,IR[6:2],2'b0}, aluSrcB2,alu2_inputB);
+
+	// ALU Section
+	ALU alu_a(out_rs1_a, alu1_inputB, aluOp1, aluOut1, zeroFlag1);
+	ALU alu_b(out_rs1_b, alu2_inputB, aluOp2,aluOut2, zeroFlag2);
+
+	// For testing
 	assign Result = aluOut1;
+	
+	// Cache Module
 	
 endmodule	
 
