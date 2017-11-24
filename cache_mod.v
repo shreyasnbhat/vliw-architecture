@@ -797,7 +797,7 @@ endmodule
 
 module cache(input clk, input reset, input [31:0] address, input [127:0] inData, output reg cache_miss, output reg [7:0] outData); //address sent by the processor. Indata sent by memory, 0 for processor. outData sent to processor only.
 	
-	wire [15:0] lineWrite0, lineWrite1, lineWrite2, lineWrite3;
+	wire [15:0] lineWrite;
 	wire [23:0] Tag; wire [3:0] index; wire [3:0] offset; //Scan in input address.
 	wire [15:0] decOut;
 	
@@ -819,10 +819,10 @@ module cache(input clk, input reset, input [31:0] address, input [127:0] inData,
 	wire [15:0] validArray0,validArray1,validArray2,validArray3;
 	wire [15:0]	dirtyArray0,dirtyArray1,dirtyArray2,dirtyArray3;
 	
-	CacheSet CacheSet0(clk,reset,lineWrite0,Tag,inData,decOut,offset,validArray0,dirtyArray0,offset,outTag0,outData0,outValid[0],outDirty[0]);
-	CacheSet CacheSet1(clk,reset,lineWrite1,Tag,inData,decOut,offset,validArray1,dirtyArray1,offset,outTag1,outData1,outValid[1],outDirty[1]);
-	CacheSet CacheSet2(clk,reset,lineWrite2,Tag,inData,decOut,offset,validArray2,dirtyArray2,offset,outTag2,outData2,outValid[2],outDirty[2]);
-	CacheSet CacheSet3(clk,reset,lineWrite3,Tag,inData,decOut,offset,validArray3,dirtyArray3,offset,outTag3,outData3,outValid[3],outDirty[3]);
+	CacheSet CacheSet0(clk,reset,lineWrite,Tag,inData,decOut,offset,validArray0,dirtyArray0,offset,outTag0,outData0,outValid[0],outDirty[0]);
+	CacheSet CacheSet1(clk,reset,lineWrite,Tag,inData,decOut,offset,validArray1,dirtyArray1,offset,outTag1,outData1,outValid[1],outDirty[1]);
+	CacheSet CacheSet2(clk,reset,lineWrite,Tag,inData,decOut,offset,validArray2,dirtyArray2,offset,outTag2,outData2,outValid[2],outDirty[2]);
+	CacheSet CacheSet3(clk,reset,lineWrite,Tag,inData,decOut,offset,validArray3,dirtyArray3,offset,outTag3,outData3,outValid[3],outDirty[3]);
 	
 	
 	always@(outTag0 or outTag1 or outTag2 or outTag3) begin
