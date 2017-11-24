@@ -1,3 +1,4 @@
+
 `timescale 1ns / 1ps
 
 /*
@@ -750,6 +751,17 @@ module ctrlCkt_a(input [6:0] opcode, input [2:0] funct3,
 								branch = 1'b1;
 								jump = 1'b0;
 							end
+						default:	
+							begin
+								aluSrcB = 2'b00;
+								aluOp = 2'b00;
+								memRd=1'b0;
+								memWr=1'b0;
+								regWr=1'b0;
+								destReg=2'b00;
+								branch = 1'b0;
+								jump = 1'b0;
+							end	
 					endcase
 				end
 		end				
@@ -809,6 +821,16 @@ module ctrlCkt_b(input [2:0] funct3_msb, input [1:0] op, input [1:0] funct2,
 								rd_bSelect=1'b1;
 							end
 						end
+					default:	
+						begin
+							aluSrcB = 1'b0;
+							aluOp = 2'b00;
+							memRd=1'b0;
+							memWr=1'b0;
+							regWr=1'b0;
+							destReg=1'b0;
+							rd_bSelect=1'b0;
+						end
 				endcase
 			end	
 						
@@ -821,7 +843,7 @@ Tag Register of 20 bits
 regWrite: Is fixed for all the bits
 ======================================
 */
-module TagRegister20_bit(input clk, input reset, input regWrite, input [19:0] d, output reg [19:0] q);
+module TagRegister20_bit(input clk, input reset, input regWrite, input [19:0] d, output [19:0] q);
 	D_ff d0 (clk,	reset,	regWrite,	d[0],	q[0]);
 	D_ff d1 (clk,	reset,	regWrite,	d[1],	q[1]);
 	D_ff d2 (clk,	reset,	regWrite,	d[2],	q[2]);
@@ -853,7 +875,7 @@ Halt Tag Register of 4 bits
 regWrite: Is fixed for all the bits
 ======================================
 */
-module HaltTagRegister4_bit(input clk, input reset, input regWrite, input [3:0] d, output reg [3:0] q);
+module HaltTagRegister4_bit(input clk, input reset, input regWrite, input [3:0] d, output [3:0] q);
 	D_ff d0 (clk,	reset,	regWrite,	d[0],	q[0]);
 	D_ff d1 (clk,	reset,	regWrite,	d[1],	q[1]);
 	D_ff d2 (clk,	reset,	regWrite,	d[2],	q[2]);
@@ -867,7 +889,7 @@ Byte Register of 8 bits
 regWrite: Is fixed for all the bits
 ======================================
 */
-module Byte(input clk, input reset, input regWrite, input [7:0] d, output reg [7:0] q);
+module Byte(input clk, input reset, input regWrite, input [7:0] d, output [7:0] q);
 	D_ff v0 (clk,	reset,	regWrite,	d[0],	q[0]);
 	D_ff v1 (clk,	reset,	regWrite,	d[1],	q[1]);
 	D_ff v2 (clk,	reset,	regWrite,	d[2],	q[2]);
@@ -889,7 +911,7 @@ endmodule
 regWrite: Is fixed for all the bits
 ======================================
 */
-module Data_16Byte(input clk, input reset, input regWrite, input [127:0] d, output reg [127:0] q);
+module Data_16Byte(input clk, input reset, input regWrite, input [127:0] d, output [127:0] q);
 	Byte b0 ( clk, reset, regWrite, 	d[8:0]	 ,q[8:0] );
 	Byte b1 ( clk, reset, regWrite, 	d[15:9]	 ,q[15:9]);
 	Byte b2 ( clk, reset, regWrite, 	d[23:16]	 ,q[23:16]);
@@ -1009,6 +1031,67 @@ endmodule
 
 /*
 ===========================================
+Pipeline Registers
+===========================================
+*/
+
+module register32bits_pipe(input clk, input reset, input regWrite, input [31:0] d, output [31:0] q);
+	Byte b0( clk,  reset, regWrite, d[7:0], q[7:0]);
+	Byte b1( clk,  reset, regWrite, d[15:8], q[15:8]);
+	Byte b2( clk,  reset, regWrite, d[23:16], q[23:16]);
+	Byte b3( clk,  reset, regWrite, d[31:24], q[31:24]);
+endmodule
+
+module register48bits_pipe(input clk, input reset, input regWrite, input [47:0] d, output [47:0] q);
+	Byte b0( clk,  reset, regWrite, d[7:0], q[7:0]);
+	Byte b1( clk,  reset, regWrite, d[15:8], q[15:8]);
+	Byte b2( clk,  reset, regWrite, d[23:16], q[23:16]);
+	Byte b3( clk,  reset, regWrite, d[31:24], q[31:24]);
+	Byte b4( clk,  reset, regWrite, d[39:32], q[39:32]);
+	Byte b5( clk,  reset, regWrite, d[47:40], q[47:40]);
+endmodule
+
+module IF_ID_pipeline(input clk, input reset, input pipelineWrite, input [47:0] IR, input [31:0] nextPC,
+							 output [47:0] IROut, output [31:0] nextPCOut);
+	register48bits_pipe IR_register(clk, reset, pipelineWrite, IR, IROut);
+	register32bits_pipe PC_register(clk, reset, pipelineWrite, nextPC, nextPCOut);
+endmodule
+
+module ID_EX_pipeline(input clk, input reset, input pipelineWrite,input [31:0] pcPlus3_in,input [4:0] rs1_a_in,input [4:0] rs1_b_in, input [4:0] rd_a_in , 
+							 input [4:0] rd_b_in,input [4:0] rs2_a_in,input [4:0] rs2_b_in, input [31:0] out_rs1_a_in,input [31:0] out_rs2_a_in,
+							 input [31:0] out_rs1_b_in, input [31:0] out_rs2_b_in, input [31:0] jalr_alu_in , input [31:0] xori_lh_alu_in , 
+							 input [31:0] beq_alu_in , input [31:0] cli_alu_in , input [31:0] csw_alu_in , input [1:0] aluOp_a_in, input [1:0] aluSrcB_a_in,
+							 input branch_in, input memRd_a_in, input memWr_a_in, input regWr_a_in,input [1:0] destReg_a_in, input jump_in, 
+							 input [1:0] aluOp_b_in, input aluSrcB_b_in, input memRd_b_in , input memWr_b_in, input regWr_b_in, input destReg_b_in,
+							 output [31:0] pcPlus3,output [4:0] rs1_a,output [4:0] rs1_b, output [4:0] rd_a, output [4:0] rd_b,
+							 output [4:0] rs2_a,output [4:0] rs2_b, output [31:0] out_rs1_a,output [31:0] out_rs2_a,output [31:0] out_rs1_b,
+							 output [31:0] out_rs2_b, output [31:0] jalr_alu , output [31:0] xori_lh_alu , output [31:0] beq_alu , 
+							 output [31:0] cli_alu , output [31:0] csw_alu , output [1:0] aluOp_a, output [1:0] aluSrcB_a,output branch, 
+							 output memRd_a, output memWr_a, output regWr_a,output [1:0] destReg_a, output jump, output [1:0] aluOp_b,
+							 output aluSrcB_b, output memRd_b , output memWr_b, output regWr_b, output destReg_b);
+							 
+		wire [1:0] dummy1;
+		wire [13:0] dummy2;
+		register32bits_pipe pc_register(clk, reset, pipelineWrite, pcPlus3_in, pcPlus3);
+		register32bits_pipe reg_rs1_a(clk, reset, pipelineWrite, out_rs1_a_in , out_rs1_a);
+		register32bits_pipe reg_rs2_a(clk, reset, pipelineWrite, out_rs2_a_in , out_rs2_a);
+		register32bits_pipe reg_rs1_b(clk, reset, pipelineWrite, out_rs1_b_in , out_rs1_b);
+		register32bits_pipe reg_rs2_b(clk, reset, pipelineWrite, out_rs2_b_in , out_rs2_b);
+		register32bits_pipe jalr_sext(clk, reset, pipelineWrite, jalr_alu_in  , jalr_alu);
+		register32bits_pipe xori_lh_sext(clk, reset, pipelineWrite, xori_lh_alu_in , xori_lh_alu);
+		register32bits_pipe beq_concat(clk, reset, pipelineWrite, beq_alu_in, beq_alu);
+		register32bits_pipe cli_sext(clk, reset, pipelineWrite, cli_alu_in, cli_alu);
+		register32bits_pipe csw_concat(clk, reset, pipelineWrite, csw_alu_in, csw_alu);
+		// Order is { rs1_a , rs1_b , rs2_a , rs2_ b , rd_a , rd_b , 00} --> 32bits
+ 		register32bits_pipe register_nos(clk, reset, pipelineWrite, { rs1_a_in , rs1_b_in , rs2_a_in , rs2_b_in , rd_a_in , rd_b_in , 2'b00}, { rs1_a , rs1_b , rs2_a , rs2_b , rd_a , rd_b , dummy1});
+		register32bits_pipe controls(clk, reset, pipelineWrite, {aluOp_a_in,aluSrcB_a_in,branch_in,memRd_a_in,memWr_a_in,regWr_a_in,destReg_a_in,jump_in,aluOp_b_in,aluSrcB_b_in,memRd_b_in,memWr_b_in,regWr_b_in,destReg_b_in,14'd0},
+															  {aluOp_a,aluSrcB_a,branch,memRd_a,memWr_a,regWr_a,destReg_a,jump,aluOp_b,aluSrcB_b,memRd_b,memWr_b,regWr_b,destReg_b,dummy2});
+
+endmodule							 
+							 
+
+/*
+===========================================
 Single Cycle Implementation
 ===========================================
 */
@@ -1016,10 +1099,11 @@ module singleCycle(input clk, input reset, output [31:0] Result);
 
 	wire regWrite;
 	wire decOut1b;
-	wire [31:0] pcOut;
-	wire [31:0] nextPCAdderOut; 
+	wire [31:0] pcOutRegister;
+	wire [31:0] nextPCAdderOut,nextPC_after_pipeline;
 	wire [31:0] muxOutNextPC, beq_add, aluOut1,aluOut2;
-	wire [47:0] IR;
+	wire [47:0] IR_before_pipeline;
+	wire [47:0] IR_after_pipeline;
 	wire [1:0] PCSrc;
 	wire [31:0] memOut;
 	
@@ -1032,7 +1116,8 @@ module singleCycle(input clk, input reset, output [31:0] Result);
 	wire aluSrcB2,memRd2,rd_bSelect2,memWr2,regWr2,destReg2;
 
 	// Register File inputs
-	wire[4:0] rd_b;
+	wire[4:0] rs1_a_before_ID_EX, rs2_a_before_ID_EX, rs1_b_before_ID_EX, rs2_b_before_ID_EX, rd_a_before_ID_EX, rd_b_before_ID_EX;
+
 	wire [31:0] wd_a, wd_b,out_rs1_a,out_rs2_a,out_rs2_b,out_rs1_b;
 
 	wire [31:0] branch_address;
@@ -1044,49 +1129,97 @@ module singleCycle(input clk, input reset, output [31:0] Result);
 
 	wire [31:0] alu2_inputB;
 	wire zeroFlag2;
+	
+	// Pipeline Writes
+	wire IF_ID_pipeline_write;
+	wire ID_EX_pipelineWrite;
+	assign IF_ID_pipeline_write = 1'b1;
+	assign ID_EX_pipelineWrite = 1'b1;	
+	
+	//Post ID_EX Pipeline Wires
+	// ap_ID_EX ==> after_pipeline_ID_EX
+	wire [31:0] pcPlus3_ap_ID_EX;
+	wire [4:0] rs1_a_ap_ID_EX,rs1_b_ap_ID_EX;
+	wire [4:0] rd_a_ap_ID_EX,rd_b_ap_ID_EX,rs2_a_ap_ID_EX,rs2_b_ap_ID_EX;
+	wire [31:0] out_rs1_a_ap_ID_EX,out_rs2_a_ap_ID_EX,out_rs1_b_ap_ID_EX;
+	wire [31:0] out_rs2_b_ap_ID_EX,jalr_alu_ap_ID_EX,xori_lh_alu_ap_ID_EX;
+	wire [31:0] beq_alu_ap_ID_EX,cli_alu_ap_ID_EX,csw_alu_ap_ID_EX;
+	wire [1:0] aluOp_a_ap_ID_EX,aluSrcB_a_ap_ID_EX, destReg_a_ap_ID_EX, aluOp_b_ap_ID_EX;
+	wire branch_ap_ID_EX,memRd_a_ap_ID_EX,memWr_a_ap_ID_EX, regWr_a_ap_ID_EX;
+	wire jump_ap_ID_EX, aluSrcB_b_ap_ID_EX,memRd_b_ap_ID_EX;
+	wire memWr_b_ap_ID_EX, regWr_b_ap_ID_EX, destReg_b_ap_ID_EX;
 
-
-	register32bit_PC pc( clk, reset, 1'b1, 1'b1, muxOutNextPC, pcOut);
+	register32bit_PC pc( clk, reset, 1'b1, 1'b1, muxOutNextPC, pcOutRegister);
 	
 	// 32'd1 as IM is has 48 bit registers
-	adder32 add(32'd1, pcOut, nextPCAdderOut);
+	adder32 add(32'd1, pcOutRegister, nextPCAdderOut);
 	
 	// Mux Control needs to be generated
 	mux4to1_32bits mux0(nextPCAdderOut,aluOut1,beq_add,32'd0,2'b00, muxOutNextPC);
 	
 	// Instruction Memory
-	IM imem(clk, reset,pcOut[3:0],IR);
+	IM imem(clk, reset,pcOutRegister[3:0],IR_before_pipeline);
+	
+	// IF_ID Pipeline
+	IF_ID_pipeline if_id_pipeline(clk, reset, IF_ID_pipeline_write, IR_before_pipeline, nextPCAdderOut, IR_after_pipeline, nextPC_after_pipeline);
 	
 	// Control Signal Generation
-	ctrlCkt_a control_a( IR[22:16], IR[30:28], aluOp1, aluSrcB1, branch1, memRd1, memWr1, regWr1,  destReg1, jump1);
-	ctrlCkt_b control_b(IR[15:13], IR[1:0], IR[6:5], IR[12:10], aluOp2, aluSrcB2,memRd2,rd_bSelect2, memWr2,regWr2, destReg2);	
+	ctrlCkt_a control_a( IR_after_pipeline[22:16], IR_after_pipeline[30:28], aluOp1, aluSrcB1, branch1, memRd1, memWr1, regWr1,  destReg1, jump1);
+	ctrlCkt_b control_b(IR_after_pipeline[15:13], IR_after_pipeline[1:0], IR_after_pipeline[6:5], IR_after_pipeline[12:10], aluOp2, aluSrcB2,memRd2,rd_bSelect2, memWr2,regWr2, destReg2);	
 					  
 	// Branch Address Computation
-	signExt13to32 beq_sext( {IR[47],IR[23],IR[46:41], IR[27:24],1'b0}, branch_address);
-	signExt6to32 cli_sext({IR[12], IR[6:2]}, cli_immediate6bits);
+	signExt12to32 beq_sext( {IR_after_pipeline[47],IR_after_pipeline[23],IR_after_pipeline[46:41], IR_after_pipeline[27:24]}, branch_address);
+	signExt6to32 cli_sext({IR_after_pipeline[12], IR_after_pipeline[6:2]}, cli_immediate6bits);
 
 	// Pre Register File Muxes
-	mux2to1_5bits select_rd_b(IR[11:7],{2'b00, IR[9:7]},rd_bSelect2, rd_b);
-	mux4to1_32bits select_wd_a(aluOut1,nextPCAdderOut,memOut,branch_address, destReg1,wd_a);
+	mux2to1_5bits select_rd_b(IR_after_pipeline[11:7],{2'b00, IR_after_pipeline[9:7]},rd_bSelect2, rd_b_before_ID_EX);
+	mux4to1_32bits select_wd_a(aluOut1,nextPC_after_pipeline,memOut,branch_address, destReg1,wd_a);
 	mux2to1_32bits select_wd_b(aluOut2,cli_immediate6bits, destReg2, wd_b);
 
-	registerFile reg_file( clk, reset, regWr1 | regWr2 , IR[35:31], IR[40:36], {2'b00,IR[9:7]}, {2'b00, IR[4:2]},
-							IR[27:23],rd_b, wd_a, wd_b, out_rs1_a, out_rs2_a, out_rs1_b, out_rs2_b);
+	assign rs1_a_before_ID_EX = IR_after_pipeline[35:31];
+	assign rs2_a_before_ID_EX = IR_after_pipeline[40:36];
+	assign rs1_b_before_ID_EX = {2'b00,IR_after_pipeline[9:7]};
+	assign rs2_b_before_ID_EX = {2'b00, IR_after_pipeline[4:2]};
+	assign rd_a_before_ID_EX = IR_after_pipeline[27:23]; 
+	
+	registerFile reg_file( clk, reset, regWr1 | regWr2 , rs1_a_before_ID_EX, rs2_a_before_ID_EX, rs1_b_before_ID_EX,rs2_b_before_ID_EX,
+							rd_a_before_ID_EX,rd_b_before_ID_EX, wd_a, wd_b, out_rs1_a, out_rs2_a, out_rs1_b, out_rs2_b);
 		
-	signExt12to32 imm12bits_sext(IR[47:36], immediate_12bits);
+	signExt12to32 imm12bits_sext(IR_after_pipeline[47:36], immediate_12bits);
+	
+	// ID EX Pipeline
+	ID_EX_pipeline id_ex_pipeline( clk, reset, ID_EX_pipelineWrite, nextPCAdderOut , rs1_a_before_ID_EX ,rs1_b_before_ID_EX, rd_a_before_ID_EX , 
+							 rd_b_before_ID_EX, rs2_a_before_ID_EX, rs2_b_before_ID_EX , out_rs1_a , out_rs2_a ,
+							 out_rs1_b, out_rs2_b, {immediate_12bits[30:0],1'b0} , immediate_12bits , 
+							 branch_address , cli_immediate6bits , {25'b0,IR_after_pipeline[6:2],2'b0} , 
+							 aluOp1, aluSrcB1 , branch1, memRd1, memRd1, regWr1 ,destReg1 , jump1, 
+							 aluOp2, aluSrcB2, memRd2 , memWr2, regWr2, destReg2,
+							 pcPlus3_ap_ID_EX ,rs1_a_ap_ID_EX,rs1_b_ap_ID_EX,rd_a_ap_ID_EX, rd_b_ap_ID_EX,
+							 rs2_a_ap_ID_EX,rs2_b_ap_ID_EX,out_rs1_a_ap_ID_EX,out_rs2_a_ap_ID_EX,out_rs1_b_ap_ID_EX,
+							 out_rs2_b_ap_ID_EX,jalr_alu_ap_ID_EX,xori_lh_alu_ap_ID_EX,beq_alu_ap_ID_EX, 
+							 cli_alu_ap_ID_EX, csw_alu_ap_ID_EX, aluOp_a_ap_ID_EX, aluSrcB_a_ap_ID_EX, branch_ap_ID_EX, 
+							 memRd_a_ap_ID_EX, memWr_a_ap_ID_EX, regWr_a_ap_ID_EX, destReg_a_ap_ID_EX, jump_ap_ID_EX,  aluOp_b_ap_ID_EX,
+							 aluSrcB_b_ap_ID_EX, memRd_b_ap_ID_EX, memWr_b_ap_ID_EX, regWr_b_ap_ID_EX, destReg_b_ap_ID_EX);
+	
+	// Note: From here onwards most wires will have a _ap_ID_EX Suffix
 	
 	// ALU InputB Muxes
-	mux4to1_32bits select_alu_a_inputB(out_rs2_a,{27'd0,IR[40:36]},immediate_12bits,{immediate_12bits[30:0],1'b0}, aluSrcB1,alu1_inputB);
-	mux2to1_32bits select_alu_b_inputB(out_rs2_b,{25'b0,IR[6:2],2'b0}, aluSrcB2,alu2_inputB);
+	mux4to1_32bits select_alu_a_inputB(out_rs2_a_ap_ID_EX,{27'd0,rs2_a_ap_ID_EX},xori_lh_alu_ap_ID_EX,jalr_alu_ap_ID_EX, aluSrcB_a_ap_ID_EX,alu1_inputB);
+	mux2to1_32bits select_alu_b_inputB(out_rs2_b_ap_ID_EX,csw_alu_ap_ID_EX, aluSrcB_b_ap_ID_EX,alu2_inputB);
 
 	// ALU Section
-	ALU alu_a(out_rs1_a, alu1_inputB, aluOp1, aluOut1, zeroFlag1);
-	ALU alu_b(out_rs1_b, alu2_inputB, aluOp2,aluOut2, zeroFlag2);
+	ALU alu_a(out_rs1_a_ap_ID_EX, alu1_inputB, aluOp_a_ap_ID_EX, aluOut1, zeroFlag1);
+	ALU alu_b(out_rs1_b_ap_ID_EX, alu2_inputB, aluOp_b_ap_ID_EX, aluOut2, zeroFlag2);
 
 	// For testing
 	assign Result = aluOut1;
 	
+	// Insert EX_MEM Pipeline
+
 	// Cache Module
+	
+	// Insert MEM_WB Pipeline
+	
 	
 endmodule	
 
