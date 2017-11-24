@@ -875,7 +875,7 @@ Halt Tag Register of 4 bits
 regWrite: Is fixed for all the bits
 ======================================
 */
-module HaltTagRegister4_bit(input clk, input reset, input regWrite, input [3:0] d, output reg [3:0] q);
+module HaltTagRegister4_bit(input clk, input reset, input regWrite, input [3:0] d, output [3:0] q);
 	D_ff d0 (clk,	reset,	regWrite,	d[0],	q[0]);
 	D_ff d1 (clk,	reset,	regWrite,	d[1],	q[1]);
 	D_ff d2 (clk,	reset,	regWrite,	d[2],	q[2]);
@@ -889,7 +889,7 @@ Byte Register of 8 bits
 regWrite: Is fixed for all the bits
 ======================================
 */
-module Byte(input clk, input reset, input regWrite, input [7:0] d, output reg [7:0] q);
+module Byte(input clk, input reset, input regWrite, input [7:0] d, output [7:0] q);
 	D_ff v0 (clk,	reset,	regWrite,	d[0],	q[0]);
 	D_ff v1 (clk,	reset,	regWrite,	d[1],	q[1]);
 	D_ff v2 (clk,	reset,	regWrite,	d[2],	q[2]);
@@ -900,7 +900,7 @@ module Byte(input clk, input reset, input regWrite, input [7:0] d, output reg [7
 	D_ff v7 (clk,	reset,	regWrite,	d[7],	q[7]);
 endmodule
 
-module statusRegister_2Bytes(input clk, input reset, input regWrite, input [15:0] d, output reg [15:0] q);
+module statusRegister_2Bytes(input clk, input reset, input regWrite, input [15:0] d, output [15:0] q);
 	Byte b0(clk, reset, regWrite, d[7:0], q[7:0]),
 		  b1(clk, reset, regWrite, d[15:8], q[15:8]);
 endmodule
@@ -911,7 +911,7 @@ endmodule
 regWrite: Is fixed for all the bits
 ======================================
 */
-module Data_16Byte(input clk, input reset, input regWrite, input [127:0] d, output reg [127:0] q);
+module Data_16Byte(input clk, input reset, input regWrite, input [127:0] d, output [127:0] q);
 	Byte b0 ( clk, reset, regWrite, 	d[8:0]	 ,q[8:0] );
 	Byte b1 ( clk, reset, regWrite, 	d[15:9]	 ,q[15:9]);
 	Byte b2 ( clk, reset, regWrite, 	d[23:16]	 ,q[23:16]);
@@ -1348,31 +1348,18 @@ endmodule
 
 module testbench;
 	// Input
-	reg clk, reset, regWrite;
-	reg [4:0] rs1_a, rs2_a,rd_a,rs1_b,rs2_b,rd_b;
-	reg [31:0] writeData_a;
-	reg [31:0] writeData_b;
-	// Output
-	wire [31:0] rs1_A, rs1_B, rs2_A, rs2_B;
+	reg clk, reset;
+	wire [31:0] Result;
 	
-	registerFile r1( clk,  reset,  regWrite,  rs1_a,   rs2_a,  rs1_b,  rs2_b, rd_a, rd_b,writeData_a, writeData_b,  rs1_A,	rs2_A, rs1_B, rs2_B);
+	singleCycle singleC(clk, reset, Result);
 	
 	always
 		#5 clk=~clk;
 	initial
 		begin
-			clk=0;reset=1; rs1_a=5'd0; rs1_b=5'd1; rs2_a=5'd2; rs2_b=5'd3; rd_a=5'd4; rd_b=5'd5; regWrite=1; writeData_a=32'hAAAAAAAA; writeData_b=32'hBBBBBBBB;
+			clk=0;reset=1; 
 			#5 reset=0;
-			#10 rs1_a=5'd4; rs1_b=5'd6; rs2_a=5'd18; rs2_b=5'd16; rd_a=5'd13; rd_b=5'd12; regWrite=1; writeData_a=32'hDEADBEEF; writeData_b=32'hFFFFFFFF;
-			/*
-			#10 rs=4'd15; rt=4'd14; rd=4'd14; regWrite=1; writeData=32'h12345678;
-			#10 rs=4'd15; rt=4'd14; rd=4'd1; regWrite=1; writeData=32'hDEADBEEF;
-			#10 rs=4'd15; rt=4'd1; rd=4'd1; regWrite=1; writeData=32'h12345678;
-			#10 rs=4'd15; rt=4'd1; rd=4'd2; regWrite=1; writeData=32'hBABABABE;
-			#10 rs=4'd2; rt=4'd1; rd=4'd2; regWrite=0; writeData=32'h12345678;
-			#10 rs=4'd2; rt=4'd1; rd=4'd2; regWrite=0; writeData=32'h12345678;
-			*/
-			#10 $finish;
-		end
+			#100 $finish;
+			end
 endmodule
 
