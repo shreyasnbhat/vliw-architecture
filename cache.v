@@ -753,7 +753,7 @@ module IM(input clk, input reset, input [3:0] pc_4bits, output [47:0] IR);
 	VLIW_IM rIM1 (clk, reset, 48'h000000004109, Qout1); //  nop|| c.li $2,2 
 	VLIW_IM rIM2 (clk, reset, 48'h000000004211, Qout2); //  nop|| c.li $4,4 
 	VLIW_IM rIM3 (clk, reset, 48'h000000004295, Qout3); //  nop|| c.li $5,5 
-	VLIW_IM rIM4 (clk, reset, 48'h001101B38E75, Qout4); // add $3 ,$1,$2 || c.and $4,$5
+	VLIW_IM rIM4 (clk, reset, 48'h00000000dce8, Qout4); // nop || c.sw $2, $1 , 0
 	VLIW_IM rIM5 (clk, reset, 48'h000000000000, Qout5); 
 	VLIW_IM rIM6 (clk, reset, 48'h000000000000, Qout6); 
 	VLIW_IM rIM7 (clk, reset, 48'h000000000000, Qout7); 
@@ -1011,7 +1011,7 @@ module ctrlCkt_b(input [2:0] funct3_msb, input [1:0] op, input [1:0] funct2,
 							begin
 								 // c.sw
 								aluSrcB = 1'b1;
-								aluOp = 2'b00;
+								aluOp = 2'b01;
 								memRd=1'b0;
 								memWr=1'b1;
 								regWr=1'b0;
@@ -1684,38 +1684,48 @@ endmodule
 Pipeline Registers
 ===========================================
 */
+module Byte_pipe(input clk, input reset, input regWrite,input [7:0] d, output [7:0] q);
+	D_ff v0 (clk,	reset,	regWrite,	d[0],	q[0]);
+	D_ff v1 (clk,	reset,	regWrite,	d[1],	q[1]);
+	D_ff v2 (clk,	reset,	regWrite,	d[2],	q[2]);
+	D_ff v3 (clk,	reset,	regWrite,	d[3],	q[3]);
+	D_ff v4 (clk,	reset,	regWrite,	d[4],	q[4]);
+	D_ff v5 (clk,	reset,	regWrite,	d[5],	q[5]);
+	D_ff v6 (clk,	reset,	regWrite,	d[6],	q[6]);
+	D_ff v7 (clk,	reset,	regWrite,	d[7],	q[7]);
+endmodule
 
 module register8bits_pipe(input clk, input reset, input regWrite, input [7:0] d, output [7:0] q);
 	
-	Byte b0( clk,  reset, regWrite, d[7:0], q[7:0]);
+	Byte_pipe b0( clk,  reset, regWrite, d[7:0], q[7:0]);
 
 endmodule
 
 
 module register16bits_pipe(input clk, input reset, input regWrite, input [15:0] d, output [15:0] q);
 	
-	Byte b0( clk,  reset, regWrite, d[7:0], q[7:0]);
-	Byte b1( clk,  reset, regWrite, d[15:8], q[15:8]);
+	Byte_pipe b0( clk,  reset, regWrite, d[7:0], q[7:0]);
+	Byte_pipe b1( clk,  reset, regWrite, d[15:8], q[15:8]);
 
 endmodule
 
 
 module register32bits_pipe(input clk, input reset, input regWrite, input [31:0] d, output [31:0] q);
 	
-	Byte b0( clk,  reset, regWrite, d[7:0], q[7:0]);
-	Byte b1( clk,  reset, regWrite, d[15:8], q[15:8]);
-	Byte b2( clk,  reset, regWrite, d[23:16], q[23:16]);
-	Byte b3( clk,  reset, regWrite, d[31:24], q[31:24]);
+	Byte_pipe b0( clk,  reset, regWrite, d[7:0], q[7:0]);
+	Byte_pipe b1( clk,  reset, regWrite, d[15:8], q[15:8]);
+	Byte_pipe b2( clk,  reset, regWrite, d[23:16], q[23:16]);
+	Byte_pipe b3( clk,  reset, regWrite, d[31:24], q[31:24]);
 	
 endmodule
 
 module register48bits_pipe(input clk, input reset, input regWrite, input [47:0] d, output [47:0] q);
-	Byte b0( clk,  reset, regWrite, d[7:0], q[7:0]);
-	Byte b1( clk,  reset, regWrite, d[15:8], q[15:8]);
-	Byte b2( clk,  reset, regWrite, d[23:16], q[23:16]);
-	Byte b3( clk,  reset, regWrite, d[31:24], q[31:24]);
-	Byte b4( clk,  reset, regWrite, d[39:32], q[39:32]);
-	Byte b5( clk,  reset, regWrite, d[47:40], q[47:40]);
+	Byte_pipe b0( clk,  reset, regWrite, d[7:0], q[7:0]);
+	Byte_pipe b1( clk,  reset, regWrite, d[15:8], q[15:8]);
+	Byte_pipe b2( clk,  reset, regWrite, d[23:16], q[23:16]);
+	Byte_pipe b3( clk,  reset, regWrite, d[31:24], q[31:24]);
+	Byte_pipe b4( clk,  reset, regWrite, d[39:32], q[39:32]);
+	Byte_pipe b5( clk,  reset, regWrite, d[47:40], q[47:40]);
 endmodule
 
 module IF_ID_pipeline(input clk, input reset, input pipelineWrite, input [47:0] IR, input [31:0] nextPC,
@@ -1919,7 +1929,7 @@ module singleCycle(input clk, input reset, output [31:0] Result);
 	ID_EX_pipeline id_ex_pipeline( clk, reset, ID_EX_pipelineWrite, nextPCAdderOut , rs1_a_before_ID_EX ,rs1_b_before_ID_EX, rd_a_before_ID_EX , 
 							 rd_b_before_ID_EX, rs2_a_before_ID_EX, rs2_b_before_ID_EX , out_rs1_a , out_rs2_a ,
 							 out_rs1_b, out_rs2_b, {immediate_12bits[30:0],1'b0} , immediate_12bits , 
-							 branch_address , cli_immediate6bits , {25'b0,IR_after_pipeline[6:2],2'b0} , 
+							 branch_address , cli_immediate6bits , {25'b0,IR_after_pipeline[5],IR_after_pipeline[12:10],IR_after_pipeline[6],2'b0} , 
 							 aluOp1, aluSrcB1 , branch1, memRd1, memRd1, regWr1 ,destReg1 , jump1, 
 							 aluOp2, aluSrcB2, memRd2 , memWr2, regWr2, destReg2,
 							 pcPlus3_ap_ID_EX ,rs1_a_ap_ID_EX,rs1_b_ap_ID_EX,rd_a_ap_ID_EX, rd_b_ap_ID_EX,
@@ -1975,7 +1985,7 @@ module singleCycleBench;
 		#5 clk=~clk;
 	initial
 		begin
-			clk=0;reset=1; 
+			clk=0;reset=1;
 			#5 reset=0;
 			#100 $finish;
 			end
