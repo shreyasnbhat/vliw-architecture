@@ -87,6 +87,16 @@ module decoder3to8( input [2:0] decIn, output reg [7:0] decOut);
 	endcase
 endmodule
 
+module decoder2to4( input [1:0] decIn, output reg [3:0] decOut);
+	always@(decIn)
+	case(decIn)
+			2'b00: decOut=4'b0001; 
+			2'b01: decOut=4'b0010;
+			2'b10: decOut=4'b0100;
+			2'b11: decOut=4'b1000;
+	endcase
+endmodule
+
 module decoder5to32( input [4:0] decIn, output reg [31:0] decOut);
 	always@(decIn)
 		begin
@@ -254,6 +264,20 @@ module mux4to1_128bits( input [127:0] in0,in1,in2,in3, input [1:0] sel, output r
 endmodule
 
 module mux8to1_8bits ( input [7:0] in0,in1,in2,in3,in4,in5,in6,in7,input [2:0] sel, output reg [7:0] muxOut );
+	always@(in0,in1,in2,in3,in4,in5,in6,in7,sel)
+	case (sel)
+				3'b000: muxOut=in0;
+				3'b001: muxOut=in1;
+				3'b010: muxOut=in2;
+				3'b011: muxOut=in3;
+				3'b100: muxOut=in4;
+				3'b101: muxOut=in5;
+				3'b110: muxOut=in6;
+				3'b111: muxOut=in7;
+	endcase
+endmodule
+
+module mux8to1_64bits ( input [63:0] in0,in1,in2,in3,in4,in5,in6,in7,input [2:0] sel, output reg [63:0] muxOut );
 	always@(in0,in1,in2,in3,in4,in5,in6,in7,sel)
 	case (sel)
 				3'b000: muxOut=in0;
@@ -1034,651 +1058,6 @@ module ctrlCkt_b(input [2:0] funct3_msb, input [1:0] op, input [1:0] funct2,
 						
 endmodule	
 
-
-/*
-=====================================
-Tag Register of 20 bits
-regWrite: Is fixed for all the bits
-======================================
-*/
-module TagRegister20_bit(input clk, input reset, input regWrite, input decOut, input [19:0] d, output [19:0] q);
-	D_ff_reg d0 (clk,	reset,	regWrite,decOut,	d[0],	q[0]);
-	D_ff_reg d1 (clk,	reset,	regWrite,decOut,	d[1],	q[1]);
-	D_ff_reg d2 (clk,	reset,	regWrite,decOut,	d[2],	q[2]);
-	D_ff_reg d3 (clk,	reset,	regWrite,decOut,	d[3],	q[3]);
-	D_ff_reg d4 (clk,	reset,	regWrite,decOut,	d[4],	q[4]);
-	D_ff_reg d5 (clk,	reset,	regWrite,decOut,	d[5],	q[5]);
-	D_ff_reg d6 (clk,	reset,	regWrite,decOut,	d[6],	q[6]);
-	D_ff_reg d7 (clk,	reset,	regWrite,decOut,	d[7],	q[7]);
-	D_ff_reg d8 (clk,	reset,	regWrite,decOut,	d[8],	q[8]);
-	D_ff_reg d9 (clk,	reset,	regWrite,decOut,	d[9],	q[9]);
-	D_ff_reg d10(clk,	reset,	regWrite,decOut,	d[10],	q[10]);
-	D_ff_reg d11(clk,	reset,	regWrite,decOut,	d[11],	q[11]);
-	D_ff_reg d12(clk,	reset,	regWrite,decOut,	d[12],	q[12]);
-	D_ff_reg d13(clk,	reset,	regWrite,decOut,	d[13],	q[13]);
-	D_ff_reg d14(clk,	reset,	regWrite,decOut,	d[14],	q[14]);
-	D_ff_reg d15(clk,	reset,	regWrite,decOut,	d[15],	q[15]);
-	D_ff_reg d16(clk,	reset,	regWrite,decOut,	d[16],	q[16]);
-	D_ff_reg d17(clk,	reset,	regWrite,decOut,	d[17],	q[17]);
-	D_ff_reg d18(clk,	reset,	regWrite,decOut,  d[18],	q[18]);
-	D_ff_reg d19(clk,	reset,	regWrite,decOut,  d[19],	q[19]);
-		
-endmodule
-
-	
-/*
-=====================================
-Halt Tag Register of 4 bits
-regWrite: Is fixed for all the bits
-======================================
-*/
-module HaltTagRegister4_bit(input clk, input reset, input regWrite,input decOut, input [3:0] d, output [3:0] q);
-	D_ff_reg d0 (clk,	reset,	regWrite, decOut,	d[0],	q[0]); 
-	D_ff_reg d1 (clk,	reset,	regWrite, decOut,	d[1],	q[1]);
-	D_ff_reg d2 (clk,	reset,	regWrite, decOut,	d[2],	q[2]);
-	D_ff_reg d3 (clk,	reset,	regWrite, decOut, d[3],	q[3]);
-endmodule
-
-
-/*
-=====================================
-Byte Register of 8 bits
-regWrite: Is fixed for all the bits
-======================================
-*/
-module Byte(input clk, input reset, input regWrite, input decOut,input [7:0] d, output [7:0] q);
-	D_ff_reg v0 (clk,	reset,	regWrite,decOut,	d[0],	q[0]);
-	D_ff_reg v1 (clk,	reset,	regWrite,decOut,	d[1],	q[1]);
-	D_ff_reg v2 (clk,	reset,	regWrite,decOut,	d[2],	q[2]);
-	D_ff_reg v3 (clk,	reset,	regWrite,decOut,	d[3],	q[3]);
-	D_ff_reg v4 (clk,	reset,	regWrite,decOut,	d[4],	q[4]);
-	D_ff_reg v5 (clk,	reset,	regWrite,decOut,	d[5],	q[5]);
-	D_ff_reg v6 (clk,	reset,	regWrite,decOut,	d[6],	q[6]);
-	D_ff_reg v7 (clk,	reset,	regWrite,decOut,	d[7],	q[7]);
-endmodule
-
-module Byte_Status(input clk, input reset, input regWrite, input [7:0] decOut, input [7:0] d, output [7:0] q);
-	D_ff_reg v0 (clk,	reset,	regWrite,decOut[0],	d[0],	q[0]);
-	D_ff_reg v1 (clk,	reset,	regWrite,decOut[1],	d[1],	q[1]);
-	D_ff_reg v2 (clk,	reset,	regWrite,decOut[2],	d[2],	q[2]);
-	D_ff_reg v3 (clk,	reset,	regWrite,decOut[3],	d[3],	q[3]);
-	D_ff_reg v4 (clk,	reset,	regWrite,decOut[4],	d[4],	q[4]);
-	D_ff_reg v5 (clk,	reset,	regWrite,decOut[5],	d[5],	q[5]);
-	D_ff_reg v6 (clk,	reset,	regWrite,decOut[6],	d[6],	q[6]);
-	D_ff_reg v7 (clk,	reset,	regWrite,decOut[7],	d[7],	q[7]);
-endmodule                              
-
-module statusRegister_2Bytes(input clk, input reset, input regWrite, input [15:0] decOut, input d, output [15:0] q);
-	Byte_Status b0(clk, reset, regWrite, decOut[7:0],{8{d}}, q[7:0]),
-		  b1(clk, reset, regWrite,decOut[15:8], {8{d}}, q[15:8]);
-endmodule
-
-/*
-=====================================
-16 Bytes Data Register Block
-regWrite: Is fixed for all the bits
-======================================
-*/
-module Data_16Byte(input clk, input reset, input regWrite, input decOut, input [127:0] d, input [15:0] inputData16bits, input [2:0] offset,input writeWord ,output [127:0] q);
-	
-	wire [7:0] decOutWriteWord;
-	wire [7:0] decMuxOut;
-	wire [127:0] dataMuxOut;
-	
-	decoder3to8 offsetOut( offset, decOutWriteWord);
-	mux2to1_8bits decOutMux( {8{decOut}},decOutWriteWord,writeWord,decMuxOut );
-	mux2to1_128bits dataMux( d , {8{inputData16bits}} , writeWord , dataMuxOut);
-	
-	Byte b0 ( clk, reset, regWrite, decMuxOut[0],	dataMuxOut[7:0]	 ,q[7:0] );
-	Byte b1 ( clk, reset, regWrite, decMuxOut[0],	dataMuxOut[15:8]	 ,q[15:8]);
-	Byte b2 ( clk, reset, regWrite, decMuxOut[1],	dataMuxOut[23:16]	 ,q[23:16]);
-	Byte b3 ( clk, reset, regWrite, decMuxOut[1],	dataMuxOut[31:24]	 ,q[31:24]);
-	Byte b4 ( clk, reset, regWrite, decMuxOut[2],	dataMuxOut[39:32]	 ,q[39:32]);
-	Byte b5 ( clk, reset, regWrite, decMuxOut[2],	dataMuxOut[47:40]	 ,q[47:40]);
-	Byte b6 ( clk, reset, regWrite, decMuxOut[3],	dataMuxOut[55:48]	 ,q[55:48]);
-	Byte b7 ( clk, reset, regWrite, decMuxOut[3],	dataMuxOut[63:56]	 ,q[63:56]);
-	Byte b8 ( clk, reset, regWrite, decMuxOut[4],	dataMuxOut[71:64]  ,q[71:64]);
-	Byte b9 ( clk, reset, regWrite, decMuxOut[4],	dataMuxOut[79:72]  ,q[79:72]);
-	Byte b10( clk, reset, regWrite, decMuxOut[5],	dataMuxOut[87:80]  ,q[87:80]);
-	Byte b11( clk, reset, regWrite, decMuxOut[5],	dataMuxOut[95:88]  ,q[95:88]);
-	Byte b12( clk, reset, regWrite, decMuxOut[6],	dataMuxOut[103:96] ,q[103:96]);
-	Byte b13( clk, reset, regWrite, decMuxOut[6],	dataMuxOut[111:104],q[111:104]);
-	Byte b14( clk, reset, regWrite, decMuxOut[7],	dataMuxOut[119:112],q[119:112]);
-	Byte b15( clk, reset, regWrite, decMuxOut[7],	dataMuxOut[127:120],q[127:120]);
-endmodule
-
-/*
-=====================================
-16x16B Data Register Block
-One such block per set
-regWrite: Varies for each line/row
-======================================
-*/
-module DataRegisterSet(input clk, input reset, input regWrite, input [15:0]decOut,input [127:0] inputData, input [15:0] inputData16bits, input [2:0] offset,input writeWord,
-							output [127:0] data0 , output [127:0] data1, output [127:0] data2, output [127:0] data3,
-							output [127:0] data4 , output [127:0] data5, output [127:0] data6, output [127:0] data7,
-							output [127:0] data8 , output [127:0] data9, output [127:0] data10,output [127:0] data11,
-							output [127:0] data12, output [127:0] data13,output [127:0] data14,output [127:0] data15);
-		
-	
-	Data_16Byte d0( clk,  reset,  regWrite ,	decOut[0], inputData , inputData16bits, offset,writeWord,data0);
-	Data_16Byte d1( clk,  reset,  regWrite ,	decOut[1], inputData , inputData16bits, offset,writeWord,data1);
-	Data_16Byte d2( clk,  reset,  regWrite ,	decOut[2], inputData , inputData16bits, offset,writeWord,data2);
-	Data_16Byte d3( clk,  reset,  regWrite ,	decOut[3], inputData , inputData16bits, offset,writeWord,data3);
-	Data_16Byte d4( clk,  reset,  regWrite ,	decOut[4], inputData , inputData16bits, offset,writeWord,data4);
-	Data_16Byte d5( clk,  reset,  regWrite ,	decOut[5], inputData , inputData16bits, offset,writeWord,data5);
-	Data_16Byte d6( clk,  reset,  regWrite ,	decOut[6], inputData , inputData16bits, offset,writeWord,data6);
-	Data_16Byte d7( clk,  reset,  regWrite ,	decOut[7], inputData , inputData16bits, offset,writeWord,data7);
-	Data_16Byte d8( clk,  reset,  regWrite ,	decOut[8], inputData , inputData16bits, offset,writeWord,data8);
-	Data_16Byte d9( clk,  reset,  regWrite ,	decOut[9], inputData , inputData16bits, offset,writeWord,data9);
-	Data_16Byte d10( clk,  reset,  regWrite ,decOut[10], inputData , inputData16bits, offset,writeWord,data10);
-	Data_16Byte d11( clk,  reset,  regWrite ,decOut[11], inputData , inputData16bits, offset,writeWord,data11);
-	Data_16Byte d12( clk,  reset,  regWrite ,decOut[12], inputData , inputData16bits, offset,writeWord,data12);
-	Data_16Byte d13( clk,  reset,  regWrite ,decOut[13], inputData , inputData16bits, offset,writeWord,data13);
-	Data_16Byte d14( clk,  reset,  regWrite ,decOut[14], inputData , inputData16bits, offset,writeWord,data14);
-	Data_16Byte d15( clk,  reset,  regWrite ,decOut[15], inputData , inputData16bits, offset,writeWord,data15);
-	
-endmodule
-
-
-/*
-=====================================
-16x19bits Tag Register Block
-One such block per set
-regWrite: Varies for each line/row
-======================================
-*/
-module TagRegisterSet(input clk, input reset, input regWrite, input [15:0] decOut,input [19:0] inputTag, 
-							output [19:0] tag0, output [19:0] tag1, output [19:0] tag2, output [19:0] tag3,
-							output [19:0] tag4, output [19:0] tag5, output [19:0] tag6, output [19:0] tag7,
-							output [19:0] tag8, output [19:0] tag9, output [19:0] tag10, output [19:0] tag11,
-							output [19:0] tag12, output [19:0] tag13, output [19:0] tag14, output [19:0] tag15);
-	
-	TagRegister20_bit t0( clk,  reset, regWrite, decOut[0], inputTag, tag0);
-	TagRegister20_bit t1( clk,  reset, regWrite, decOut[1], inputTag, tag1);
-	TagRegister20_bit t2( clk,  reset, regWrite, decOut[2], inputTag, tag2);
-	TagRegister20_bit t3( clk,  reset, regWrite, decOut[3], inputTag, tag3);
-	TagRegister20_bit t4( clk,  reset, regWrite, decOut[4], inputTag, tag4);
-	TagRegister20_bit t5( clk,  reset, regWrite, decOut[5], inputTag, tag5);
-	TagRegister20_bit t6( clk,  reset, regWrite, decOut[6], inputTag, tag6);
-	TagRegister20_bit t7( clk,  reset, regWrite, decOut[7], inputTag, tag7);
-	TagRegister20_bit t8( clk,  reset, regWrite, decOut[8], inputTag, tag8);
-	TagRegister20_bit t9( clk,  reset, regWrite, decOut[9], inputTag, tag9);
-	TagRegister20_bit t10(clk,  reset, regWrite,decOut[10], inputTag, tag10);
-	TagRegister20_bit t11(clk,  reset, regWrite,decOut[11], inputTag, tag11);
-	TagRegister20_bit t12(clk,  reset, regWrite,decOut[12], inputTag, tag12);
-	TagRegister20_bit t13(clk,  reset, regWrite,decOut[13], inputTag, tag13);
-	TagRegister20_bit t14(clk,  reset, regWrite,decOut[14], inputTag, tag14);
-	TagRegister20_bit t15(clk,  reset, regWrite,decOut[15], inputTag, tag15);
-	
-endmodule
-
-module HaltTagRegisterSet(input clk,input reset, input regWrite,input [15:0] decOut, input [3:0] inputHaltTag, 
-							output [3:0] htag0, output [3:0] htag1, output [3:0] htag2, output [3:0] htag3,
-							output [3:0] htag4, output [3:0] htag5, output [3:0] htag6, output [3:0] htag7,
-							output [3:0] htag8, output [3:0] htag9, output [3:0] htag10, output [3:0] htag11,
-							output [3:0] htag12, output [3:0] htag13, output [3:0] htag14, output [3:0] htag15);
-							
-	HaltTagRegister4_bit h0 (clk, reset, regWrite, decOut[0], inputHaltTag, htag0);
-	HaltTagRegister4_bit h1 (clk, reset, regWrite, decOut[1], inputHaltTag, htag1);
-	HaltTagRegister4_bit h2 (clk, reset, regWrite, decOut[2], inputHaltTag, htag2);
-	HaltTagRegister4_bit h3 (clk, reset, regWrite, decOut[3], inputHaltTag, htag3);
-	HaltTagRegister4_bit h4 (clk, reset, regWrite, decOut[4], inputHaltTag, htag4);
-	HaltTagRegister4_bit h5 (clk, reset, regWrite, decOut[5], inputHaltTag, htag5);
-	HaltTagRegister4_bit h6 (clk, reset, regWrite, decOut[6], inputHaltTag, htag6);
-	HaltTagRegister4_bit h7 (clk, reset, regWrite, decOut[7], inputHaltTag, htag7);
-	HaltTagRegister4_bit h8 (clk, reset, regWrite, decOut[8], inputHaltTag, htag8);
-	HaltTagRegister4_bit h9 (clk, reset, regWrite, decOut[9], inputHaltTag, htag9);
-	HaltTagRegister4_bit h10(clk, reset, regWrite,decOut[10], inputHaltTag, htag10);
-	HaltTagRegister4_bit h11(clk, reset, regWrite,decOut[11], inputHaltTag, htag11);
-	HaltTagRegister4_bit h12(clk, reset, regWrite,decOut[12], inputHaltTag, htag12);
-	HaltTagRegister4_bit h13(clk, reset, regWrite,decOut[13], inputHaltTag, htag13);
-	HaltTagRegister4_bit h14(clk, reset, regWrite,decOut[14], inputHaltTag, htag14);
-	HaltTagRegister4_bit h15(clk, reset, regWrite,decOut[15], inputHaltTag, htag15);
-
-endmodule
-
-module cacheDataOffsetMux(input [2:0] offset, input [127:0] outData, output reg [15:0] outDataMux);
-	always@(offset,outData) 
-		begin
-			case(offset) 
-				3'b000: outDataMux = outData[15:0];
-				3'b001: outDataMux = outData[31:16];
-				3'b010: outDataMux = outData[47:32];
-				3'b011: outDataMux = outData[63:48];
-				3'b100: outDataMux = outData[79:64];
-				3'b101: outDataMux = outData[95:80];
-				3'b110: outDataMux = outData[111:96];
-				3'b111: outDataMux = outData[127:112];
-			endcase
-		end
-endmodule
-
-module FIFOCounter(input clk,input clear,input counter_write,input [1:0] d,input load,output [1:0] qd);
-
-	reg     [1:0] cnt;
-	assign qd = cnt;
-
-	always @ (negedge clk)
-	begin
-		 if (clear)
-			  cnt <= 2'b00;
-		 else if (load)
-			  cnt <= d;
-		 else if ( counter_write == 1'b1)
-			  if(cnt == 2'b00) cnt <= 2'b11;
-			  else cnt <= cnt-1;
-	end 
-
-endmodule
-
-module FIFOCounterSet(input clk, input reset,input load, input [1:0] countIn,input counter_write, input [15:0] decOut, output [1:0] outCount0,  output [1:0] outCount1, 
-							 output [1:0] outCount2 ,output [1:0] outCount3, output [1:0] outCount4,  output [1:0] outCount5,
-							 output [1:0] outCount6,  output[1:0] outCount7, output[1:0] outCount8, output [1:0] outCount9,
-							 output [1:0] outCount10,  output [1:0] outCount11, output [1:0] outCount12, output [1:0] outCount13, 
-							 output [1:0] outCount14,  output [1:0] outCount15);
-							 
-	FIFOCounter f0(clk, reset,decOut[0] & counter_write,countIn,load,outCount0);	
-	FIFOCounter f1(clk, reset,decOut[1] & counter_write,countIn,load,outCount1);	
-	FIFOCounter f2(clk, reset,decOut[2] & counter_write,countIn,load,outCount2);	
-	FIFOCounter f3(clk, reset,decOut[3] & counter_write,countIn,load,outCount3);	
-	FIFOCounter f4(clk, reset,decOut[4] & counter_write,countIn,load,outCount4);	
-	FIFOCounter f5(clk, reset,decOut[5] & counter_write,countIn,load,outCount5);	
-	FIFOCounter f6(clk, reset,decOut[6] & counter_write,countIn,load,outCount6);	
-	FIFOCounter f7(clk, reset,decOut[7] & counter_write,countIn,load,outCount7);	
-	FIFOCounter f8(clk, reset,decOut[8] & counter_write,countIn,load,outCount8);	
-	FIFOCounter f9(clk, reset,decOut[9] & counter_write,countIn,load,outCount9);	
-	FIFOCounter f10(clk, reset,decOut[10] & counter_write,countIn,load,outCount10);	
-	FIFOCounter f11(clk, reset,decOut[11] & counter_write,countIn,load,outCount11);	
-	FIFOCounter f12(clk, reset,decOut[12] & counter_write,countIn,load,outCount12);	
-	FIFOCounter f13(clk, reset,decOut[13] & counter_write,countIn,load,outCount13);	
-	FIFOCounter f14(clk, reset,decOut[14] & counter_write,countIn,load,outCount14);	
-	FIFOCounter f15(clk, reset,decOut[15] & counter_write,countIn,load,outCount15);	
-
-endmodule
-/*
-=====================================
-Cache Set Design
-======================================
-*/
-module HaltTagApparatus(input clk, input reset, input [3:0] haltTagFromAddress, input haltTagWrite, input [3:0] index, input [15:0] indexDecIn, input memRd, output [15:0] lineSelect, output earlyMiss, output [3:0] outHalt);
-
-	wire [3:0] outHalt0,outHalt1,outHalt2,outHalt3,outHalt4,outHalt5,outHalt6,outHalt7,
-				  outHalt8,outHalt9,outHalt10,outHalt11,outHalt12,outHalt13,outHalt14,outHalt15;	
-	HaltTagRegisterSet HaltArray_1(clk,reset,haltTagWrite,indexDecIn,haltTagFromAddress,outHalt0,outHalt1,outHalt2,outHalt3,outHalt4,outHalt5,outHalt6,outHalt7,
-											 outHalt8,outHalt9,outHalt10,outHalt11,outHalt12,outHalt13,outHalt14,outHalt15);
-	
-	// Wires
-	wire [15:0] lineSelectRead;
-	wire [15:0] lineSelectWrite;
-	wire [15:0] cmp;
-	
-	// Halt Tag Compare
-	comparator_4bits c0 (outHalt0 ,haltTagFromAddress,cmp[0] );
-	comparator_4bits c1 (outHalt1 ,haltTagFromAddress,cmp[1] );
-	comparator_4bits c2 (outHalt2 ,haltTagFromAddress,cmp[2] );
-	comparator_4bits c3 (outHalt3 ,haltTagFromAddress,cmp[3] );
-	comparator_4bits c4 (outHalt4 ,haltTagFromAddress,cmp[4] );
-	comparator_4bits c5 (outHalt5 ,haltTagFromAddress,cmp[5] );
-	comparator_4bits c6 (outHalt6 ,haltTagFromAddress,cmp[6] );
-	comparator_4bits c7 (outHalt7 ,haltTagFromAddress,cmp[7] );
-	comparator_4bits c8 (outHalt8 ,haltTagFromAddress,cmp[8] );
-	comparator_4bits c9 (outHalt9 ,haltTagFromAddress,cmp[9]);
-	comparator_4bits c10(outHalt10,haltTagFromAddress,cmp[10]);
-	comparator_4bits c11(outHalt11,haltTagFromAddress,cmp[11]);
-	comparator_4bits c12(outHalt12,haltTagFromAddress,cmp[12]);
-	comparator_4bits c13(outHalt13,haltTagFromAddress,cmp[13]);
-	comparator_4bits c14(outHalt14,haltTagFromAddress,cmp[14]);
-	comparator_4bits c15(outHalt15,haltTagFromAddress,cmp[15]);
-	
-	mux16to1_4bits outHaltMux(outHalt0,outHalt1,outHalt2,outHalt3,outHalt4,outHalt5,outHalt6,outHalt7,
-									  outHalt8,outHalt9,outHalt10,outHalt11,outHalt12,outHalt13,outHalt14,outHalt15,index,outHalt);
-	
-	assign earlyMiss = ~(|cmp);
-
-	// Compute line select signals
-	assign lineSelectRead = indexDecIn & cmp ;
-	assign lineSelectWrite = indexDecIn;
-	mux2to1_16bits selectMux(lineSelectWrite,lineSelectRead, memRd, lineSelect);	
-	
-
-endmodule
-
-module CacheSet(input clk, input reset,input load,input [1:0] countIn, input [1:0] wayID,  input [23:0] inputTag, input [15:0] lineSelect, input [2:0] offset,input [1:0] waySelect, input [127:0] inputData,
-						input [15:0] inputData16bits, input writeWord,input inDirty,input inValid,input wayWrite,input dirtyWrite,input tagWrite,input validWrite,input counter_write, input memRd, output [19:0] outTag, output [15:0] outData16bits,
-						output outValid, output outDirty, output [1:0] outCounter);
-
-	wire [19:0] tag0,tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8,tag9,tag10,tag11,tag12,tag13,tag14,tag15;
-	wire [127:0] data0,data1,data2,data3,data4,data5,data6,data7,data8,data9,data10,data11,data12,data13,data14,data15;
-	wire [3:0] haltTagFromAddress;
-	wire [127:0] outData;
-	wire [15:0] valid; 
-	wire [15:0] dirty;
-	wire [1:0] outCount0,outCount1,outCount2,outCount3,outCount4,outCount5,outCount6,outCount7;
-	wire [1:0] outCount8,outCount9,outCount10,outCount11,outCount12,outCount13,outCount14,outCount15;			  
-	wire [3:0] encOut;
-	wire lineSelectInvalid;
-	
-	assign haltTagFromAddress = inputTag[3:0];
-	
-	encoder16bit lineSelectEncoder(lineSelect, encOut, lineSelectInvalid);
-	
-	wire wayCompCheck;
-	comparator_2bits wayComp(wayID,waySelect,wayCompCheck);
-		
-	TagRegisterSet tagSet(clk,reset,tagWrite,lineSelect,inputTag[23:4],tag0,tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8,tag9,tag10,tag11,tag12,tag13,tag14,tag15);
-	mux16to1_20bits tagMux(tag0,tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8,tag9,tag10,tag11,tag12,tag13,tag14,tag15,encOut,outTag);
-
-	DataRegisterSet dataSet(clk,reset,wayWrite,lineSelect,inputData,inputData16bits,offset,writeWord,data0,data1,data2,data3,data4,data5,data6,data7,data8,data9,data10,data11,data12,data13,data14,data15);
-	mux16to1_128bits dataMux(data0,data1,data2,data3,data4,data5,data6,data7,data8,data9,data10,data11,data12,data13,data14,data15,encOut,outData);
-	
-	// CountIn comes from control
-	FIFOCounterSet counterSet( clk, reset, load, countIn, counter_write,lineSelect,outCount0,outCount1,outCount2,outCount3,outCount4,outCount5,outCount6,
-										outCount7,outCount8,outCount9,outCount10,outCount11,outCount12,outCount13,outCount14,outCount15);
-	mux16to1_2bits counterMux(outCount0,outCount1,outCount2,outCount3,outCount4,outCount5,outCount6,outCount7,outCount8,
-									 outCount9,outCount10,outCount11,outCount12,outCount13,outCount14,outCount15,encOut,outCounter);
-	
-	statusRegister_2Bytes validBits(clk, reset, validWrite, lineSelect,inValid , valid);
-	mux16to1_1bit validBitMux(valid[0],valid[1],valid[2],valid[3],valid[4],valid[5],valid[6],valid[7],
-									  valid[8],valid[9],valid[10],valid[11],valid[12],valid[13],valid[14],valid[15],
-									  encOut,outValid);
-	
-	statusRegister_2Bytes dirtyBits(clk, reset,dirtyWrite,lineSelect, inDirty , dirty);
-	mux16to1_1bit dirtyBitMux(dirty[0],dirty[1],dirty[2],dirty[3],dirty[4],dirty[5],dirty[6],dirty[7],
-									  dirty[8],dirty[9],dirty[10],dirty[11],dirty[12],dirty[13],dirty[14],dirty[15],
-									  encOut,outDirty);
-
-	
-	// Sending 16 bits of data using offset information
-	cacheDataOffsetMux offsetDataMux(offset,outData,outData16bits);
-
-		
-endmodule
-
-module cacheControl(input memRd, input memWr,input [31:0] address, input hit, input placement, input [1:0] waySelect, output reg [3:0] wayWrite, output reg [3:0] dirtyWrite, 
-						  output reg [3:0] counter_write, output reg [3:0] dirtyInput, output reg [3:0] tagWrite, output reg [3:0] validWrite, output reg [3:0] countLoad);
-
-	reg [1:0] prevState = 2'b00;
-	
-	always@(memRd,memWr,hit,waySelect,placement,address)
-		begin
-			wayWrite = 4'b0000;dirtyWrite = 4'b0000;counter_write = 4'b0000;
-			dirtyInput = 4'b0000;tagWrite = 4'b0000;validWrite = 4'b0000;
-			countLoad = 4'b0000;
-			case({placement,hit})
-				2'b01: 
-					begin
-						if(memRd == 1'b1)
-							begin
-								// Cache Hit for read
-								wayWrite = 4'd0;dirtyWrite = 4'd0;counter_write = 4'd0;
-								dirtyInput = 4'd0;tagWrite = 4'd0;validWrite = 4'd0;
-								prevState = 2'b01;
-							end
-						else if(memWr == 1'b1 & prevState == 2'b10)
-							begin
-								// Cache Hit for Write. Need to set dirty bits write signals for Write Back
-								prevState = 2'b01;
-								case(waySelect)
-									2'b00: 
-										begin
-											wayWrite = 4'b0000;dirtyWrite = 4'b0001;counter_write = 4'b0000;
-											dirtyInput = 4'b0001;tagWrite = 4'd0;validWrite = 4'd0;
-										end
-									2'b01:
-										begin
-											wayWrite = 4'b0000;dirtyWrite = 4'b0010;counter_write = 4'b0000;dirtyInput = 4'b0010;
-											tagWrite = 4'd0;validWrite = 4'd0;
-										end
-									2'b10:
-										begin
-											wayWrite = 4'b0000;dirtyWrite = 4'b0100;counter_write = 4'b0000;dirtyInput = 4'b0100;
-											tagWrite = 4'd0;validWrite = 4'd0;
-										end
-									2'b11:
-										begin
-											wayWrite = 4'b0000;dirtyWrite = 4'b1000;counter_write = 4'b0000;dirtyInput = 4'b1000;
-											tagWrite = 4'd0;validWrite = 4'd0;
-										end
-								endcase		
-							end
-						else if(memWr == 1'b1 && prevState == 2'b01)
-							begin 
-								// Cache Hit for Write. Need to set dirty bits write signals for Write Back
-								prevState = 2'b01;
-								case(waySelect)
-									2'b00: 
-										begin
-											wayWrite = 4'b0001;dirtyWrite = 4'b0001;counter_write = 4'b0000;
-											dirtyInput = 4'b0001;tagWrite = 4'd0;validWrite = 4'd0;
-										end
-									2'b01:
-										begin
-											wayWrite = 4'b0010;dirtyWrite = 4'b0010;counter_write = 4'b0000;dirtyInput = 4'b0010;
-											tagWrite = 4'd0;validWrite = 4'd0;
-										end
-									2'b10:
-										begin
-											wayWrite = 4'b0100;dirtyWrite = 4'b0100;counter_write = 4'b0000;dirtyInput = 4'b0100;
-											tagWrite = 4'd0;validWrite = 4'd0;
-										end
-									2'b11:
-										begin
-											wayWrite = 4'b1000;dirtyWrite = 4'b1000;counter_write = 4'b0000;dirtyInput = 4'b1000;
-											tagWrite = 4'd0;validWrite = 4'd0;
-										end
-								endcase		
-							end	
-						else
-							begin
-								wayWrite = 4'd0;dirtyWrite = 4'd0;counter_write = 4'd0;dirtyInput = 4'd0;
-								tagWrite = 4'd0;validWrite = 4'd0;
-								prevState = 2'b01;
-							end
-					end
-				2'b00:
-					begin
-						prevState = 2'b00;
-						if(memRd == 1'b1)
-							begin
-								// Cache Miss with Read FIFO Replacement POLICY 
-								case(waySelect)
-									2'b00: 
-										begin
-											wayWrite = 4'b0001;dirtyWrite = 4'b0001;counter_write = 4'b1111;
-											dirtyInput = 4'b0000;tagWrite = 4'b0001;validWrite = 4'b0001;
-										end
-									2'b01:
-										begin
-											wayWrite = 4'b0010;dirtyWrite = 4'b0010;counter_write = 4'b1111;dirtyInput = 4'b0000;
-											tagWrite = 4'b0010;validWrite = 4'b0010;
-										end
-									2'b10:
-										begin
-											wayWrite = 4'b0100;dirtyWrite = 4'b0100;counter_write = 4'b1111;
-											dirtyInput = 4'b0000;tagWrite = 4'b0100;validWrite = 4'b0100;
-										end
-									2'b11:
-										begin
-											wayWrite = 4'b1000;dirtyWrite = 4'b1000;counter_write = 4'b1111;
-											dirtyInput = 4'b0000;tagWrite = 4'b1000;validWrite = 4'b1000;
-										end
-								endcase		
-							end
-							else if (memWr == 1'b1)
-								begin
-									// Cache Miss with Write FIFO Replace 
-									case(waySelect)
-										2'b00: 
-											begin
-												wayWrite = 4'b0001;dirtyWrite = 4'b0001;counter_write = 4'b1111;
-												dirtyInput = 4'b0000;tagWrite = 4'b0001;validWrite = 4'b0001;
-											end
-										2'b01:
-											begin
-												wayWrite = 4'b0010;dirtyWrite = 4'b0010;counter_write = 4'b1111;
-												dirtyInput = 4'b0000;tagWrite = 4'b0010;validWrite = 4'b0010;
-											end
-										2'b10:
-											begin
-												wayWrite = 4'b0100;dirtyWrite = 4'b0100;counter_write = 4'b1111;
-												dirtyInput = 4'b0000;tagWrite = 4'b0100;validWrite = 4'b0100;
-											end
-										2'b11:
-											begin
-												wayWrite = 4'b1000;dirtyWrite = 4'b1000;counter_write = 4'b1111;
-												dirtyInput = 4'b0000;tagWrite = 4'b1000;validWrite = 4'b1000;
-											end
-									endcase		
-								end
-							else
-								begin
-									wayWrite = 4'b0000;dirtyWrite = 4'b0000;counter_write = 4'b0000;
-									dirtyInput = 4'b0000;tagWrite = 4'b0000;validWrite = 4'b0000;
-								end
-					end
-				2'b10:	
-					begin
-						if( memWr == 1'b1)
-							prevState = 2'b10;
-							case(waySelect)
-								2'b00: 
-									begin
-										wayWrite = 4'b0001;dirtyWrite = 4'b0001;counter_write = 4'b0000;
-										dirtyInput = 4'b0000;tagWrite = 4'b0001;validWrite = 4'b0001;
-										countLoad = 4'b0001;
-									end
-								2'b01:
-									begin
-										wayWrite = 4'b0010;dirtyWrite = 4'b0010;counter_write = 4'b0000;
-										dirtyInput = 4'b0000;tagWrite = 4'b0010;validWrite = 4'b0010;
-										countLoad = 4'b0010;
-								end
-								2'b10:
-									begin
-										wayWrite = 4'b0100;dirtyWrite = 4'b0100;counter_write = 4'b0000;
-										dirtyInput = 4'b0000;tagWrite = 4'b0100;validWrite = 4'b0100;
-										countLoad = 4'b0100;
-									end
-								2'b11:
-									begin
-										wayWrite = 4'b1000;dirtyWrite = 4'b1000;counter_write = 4'b0000;
-										dirtyInput = 4'b0000;tagWrite = 4'b1000;validWrite = 4'b1000;
-										countLoad = 4'b1000;
-									end
-							endcase
-						end
-				2'b11:
-					begin
-						prevState=2'b11;
-						if( memWr == 1'b1)
-								begin
-									wayWrite = 4'b0000;dirtyWrite = 4'b0000;counter_write = 4'b0000;
-									dirtyInput = 4'b0000;tagWrite = 4'b0000;validWrite = 4'b0000;
-									countLoad = 4'b0000;
-								end
-						end			
-			endcase
-		end
-endmodule
-
-/*
-=====================================
-Main Cache Design
-======================================
-*/
-module cache(input clk, input reset, input load,input [31:0] address, input [127:0] inData, input [15:0] inData16bits,input writeWord,  
-				  input memRd, input memWr,output  [15:0] outData0, outData1, outData2, outData3, 
-				 output [19:0] outTag0, outTag1, outTag2, outTag3, output  [3:0] outValid, outDirty,
-				 output cache_miss, output [15:0] outData,output earlyMissHalt,output [1:0] lineNo);
-		
-	// Obtained by address provided by processor
-	wire [23:0] Tag; 
-	wire [3:0] index; 
-	wire [2:0] offset;
-	wire [15:0] decOut;
-	wire [3:0] haltTagFromAddress;
-	wire [1:0] placementWaySelect;
-	wire [1:0] waySelect;
-
-	assign offset = address[3:1];
-	assign index = address[7:4];
-	assign Tag = address[31:8];
-	assign haltTagFromAddress = address[11:8];
-	
-	//Decoder
-	decoder4to16 decoder4to16_1(index,decOut);
-	
-	//Set valid and dirty bits
-	wire [1:0] outCounter0,outCounter1,outCounter2,outCounter3;
-	wire [3:0] earlyMiss;
-	wire hit;
-	wire [1:0] invalidCount;
-	wire [3:0] countLoad;
-	wire [3:0] wayWrite, dirtyWrite, counter_write, dirtyInput, tagWrite, validWrite;
-	wire [15:0] lineSelect0,lineSelect1,lineSelect2,lineSelect3;
-	wire [3:0] haltTag0,haltTag1,haltTag2,haltTag3;
-	
-	HaltTagApparatus h0(clk,reset,haltTagFromAddress,tagWrite[0],index,decOut,memRd,lineSelect0,earlyMiss[0],haltTag0);
-	CacheSet CacheSet0(clk,reset,countLoad[0],invalidCount,2'b00,Tag,lineSelect0,offset,waySelect,
-							 inData,inData16bits,writeWord,dirtyInput[0],1'b1, 
-							 wayWrite[0], dirtyWrite[0],tagWrite[0],validWrite[0],counter_write[0],memRd,
-							 outTag0,outData0,outValid[0],outDirty[0],outCounter0);
-	
-	HaltTagApparatus h1(clk,reset,haltTagFromAddress,tagWrite[1],index,decOut,memRd,lineSelect1,earlyMiss[1],haltTag1);
-	CacheSet CacheSet1(clk,reset,countLoad[1],invalidCount,2'b01,Tag,lineSelect1,offset,waySelect,
-							 inData,inData16bits,writeWord,dirtyInput[1],1'b1,
-							 wayWrite[1], dirtyWrite[1],tagWrite[1],validWrite[1],counter_write[1],memRd,
-							 outTag1,outData1,outValid[1],outDirty[1],outCounter1);
-	
-	HaltTagApparatus h2(clk,reset,haltTagFromAddress,tagWrite[2],index,decOut,memRd,lineSelect2,earlyMiss[2],haltTag2);
-	CacheSet CacheSet2(clk,reset,countLoad[2],invalidCount,2'b10,Tag,lineSelect2,offset,waySelect,
-							 inData,inData16bits,writeWord,dirtyInput[2],1'b1,
-							 wayWrite[2], dirtyWrite[2],tagWrite[2],validWrite[2],counter_write[2],memRd,
-							 outTag2,outData2,outValid[2],outDirty[2],outCounter2);
-	
-	HaltTagApparatus h3(clk,reset,haltTagFromAddress,tagWrite[3],index,decOut,memRd,lineSelect3,earlyMiss[3],haltTag3);
-	CacheSet CacheSet3(clk,reset,countLoad[3],invalidCount,2'b11,Tag,lineSelect3,offset,waySelect,
-							 inData,inData16bits,writeWord,dirtyInput[3],1'b1,
-							 wayWrite[3], dirtyWrite[3],tagWrite[3],validWrite[3],counter_write[3],memRd,
-							 outTag3,outData3,outValid[3],outDirty[3],outCounter3); 
-	
-	assign earlyMissHalt = &earlyMiss;
-	
-	priorityEncoderInvalid pr({outValid},placementWaySelect);
-	
-	comparator_24bits cmp0( Tag, {outTag0,haltTag0} , tagCmp0);
-	comparator_24bits cmp1( Tag, {outTag1,haltTag1} , tagCmp1);
-	comparator_24bits cmp2( Tag, {outTag2,haltTag2} , tagCmp2);
-	comparator_24bits cmp3( Tag, {outTag3,haltTag3} , tagCmp3);
-
-	wire [1:0] hitWayNo;
-	wire [1:0] replacementWaySelect;
-	priorityEncoder prWay({tagCmp3,tagCmp2,tagCmp1,tagCmp0}, hitWayNo);
-		
-	assign invalidCount = ~outValid[0] + ~outValid[1] + ~outValid[2] + ~outValid[3] - 1'b1;
-	
-	assign cache_miss = earlyMissHalt | ~(tagCmp0 | tagCmp1 | tagCmp2 | tagCmp3);
-	assign hit = ~cache_miss;
-	
-	comparator_2bits cnt0( outCounter0, 2'b00 , cntCmp0);
-	comparator_2bits cnt1( outCounter1, 2'b00 , cntCmp1);
-	comparator_2bits cnt2( outCounter2, 2'b00 , cntCmp2);
-	comparator_2bits cnt3( outCounter3, 2'b00 , cntCmp3);
-	
-	wire [1:0] SecondaryWaySelect;
-	priorityEncoder cntEnc({cntCmp3,cntCmp2,cntCmp1,cntCmp0}, replacementWaySelect);
-	mux4to1_2bits waySelectMux( placementWaySelect, replacementWaySelect , 2'b00, hitWayNo , {hit,&outValid} , waySelect);
-	
-	assign lineNo = waySelect;
-	
-	cacheControl cacheCtrl(memRd, memWr, address, hit, ~(&outValid), waySelect,  wayWrite, dirtyWrite, counter_write, dirtyInput, tagWrite, validWrite, countLoad);
-
-	mux4to1_16bits finalHitMux(outData0,outData1,outData2,outData3,replacementWaySelect,outData);
-		
-endmodule
-
-
 /*
 ===========================================
 Pipeline Registers
@@ -1850,6 +1229,7 @@ module singleCycle(input clk, input reset, output [31:0] Result);
 	wire zeroFlag2;
 	
 	// Pipeline Writes
+	wire pipelineStallSignal;
 	wire IF_ID_pipeline_write;
 	wire ID_EX_pipelineWrite;
 	wire EX_MEM_pipelineWrite;
@@ -1962,6 +1342,8 @@ module singleCycle(input clk, input reset, output [31:0] Result);
 	
 	// Cache Module
 	
+	// pipelineStallSignal use this value from cache as PipelineWrite Signals
+	
 	// MEM_WB Pipeline
 	MEM_WB_pipeline mem_wb_pipeline( clk,  reset, MEM_WB_pipelineWrite,  pcPlus3_ap_EX_MEM, aluOut1_ap_EX_MEM, aluOut2_ap_EX_MEM, 
 					    beq_alu_ap_EX_MEM,  cli_alu_ap_EX_MEM, branch_ap_EX_MEM, regWr_a_ap_EX_MEM,
@@ -1993,21 +1375,24 @@ endmodule
 
 module counterBench;
 	// Input
-	reg clk, reset;
-	reg counter_write;
-	wire [1:0] count;
-	reg load;
-	reg [1:0] d;
+	reg clk;
+	reg stallSignal;
+	wire [2:0] count;
+	reg [2:0] d;
 	reg clear;
-	FIFOCounter f1(clk,clear,counter_write,d,load,count);
+	wire pipelineStall;
+	StallCounter f1(clk,clear,stallSignal,3'b110,pipelineStall);
 	
 	always
 		#5 clk=~clk;
 	initial
 		begin
-			clk=0;clear=1; 
-			#20 clear = 1'b0;counter_write = 1'b1; 
-			#100 $finish;
+			clk=0;clear=1; stallSignal = 1'b0;
+			#20 clear = 1'b0;
+			#20 stallSignal = 1'b1; 
+			#20 stallSignal = 1'b0;
+			#100 stallSignal = 1'b1;
+			#300 $finish;
 			end
 endmodule
  
@@ -2029,10 +1414,13 @@ module cacheBench;
 		reg writeWord;
 		reg [15:0] inputData16bits;
 		wire [1:0] lineNo;
+		wire [127:0] missData;
+		wire pipelineStall;
+		wire [63:0] instructionOut;
 
 		cache c1(clk, reset, load,address, inData,inputData16bits,writeWord, memRd, memWr, outData0, outData1, outData2, outData3, 
 				 outTag0, outTag1, outTag2, outTag3, outValid, outDirty,
-				 cache_miss, outData, earlyMissHalt,lineNo);
+				 cache_miss, outData, earlyMissHalt, missData,instructionOut ,lineNo, pipelineStall);
 				 
 		always
 			#5 clk=~clk;
@@ -2041,10 +1429,10 @@ module cacheBench;
 				clk=0;reset=1; memRd = 1'b0;
 				#10 reset=0; load = 1'b1;
 				#10 load = 1'b0;
-				#20 address=32'hffffff1a; inData=128'hf; memWr = 1'd1; writeWord = 1'b0;
-				#20 address=32'hfffffe1a; inData=128'hf;  memWr = 1'd1; writeWord = 1'b0;
-				#20 address=32'hfffffd3a; inData=128'hf;  memWr = 1'd1;writeWord = 1'b0;
-				#20 address=32'hfffffc4a; inData=128'hf; memWr = 1'd1; writeWord = 1'b0;
+				#20 address=32'hffffff0a; inData=128'hf; memWr = 1'd1; writeWord = 1'b0;
+				#140 address=32'hfffffe0a; inData=128'hf;  memWr = 1'd1; writeWord = 1'b0;
+				#20 address=32'hfffffd0a; inData=128'hf;  memWr = 1'd1;writeWord = 1'b0;
+				#20 address=32'hfffffc0a; inData=128'hf; memWr = 1'd1; writeWord = 1'b0;
 				#20 address=32'hffffff0a; memRd = 1'd1; memWr = 1'd0; writeWord = 1'b0;
 				#20 address=32'hfffffe0a; memRd = 1'd1; memWr = 1'd0; writeWord = 1'b0;
 				#20 address=32'hfffffd0a; memRd = 1'd1; memWr = 1'd0;	writeWord = 1'b0;
@@ -2052,7 +1440,7 @@ module cacheBench;
 				
 				// Overwrite data 
 				#20 address=32'hffffff00; inputData16bits=16'h1; memRd = 1'd0; memWr=1'd1; writeWord = 1'b1;
-				#20 memRd = 1'd1; memWr=1'd1;
+				#20 memRd = 1'd1; memWr=1'd1; 
 				#20 address=32'hffffff02; inputData16bits=16'h2; memRd = 1'd0; memWr=1'd1; writeWord = 1'b1;
 				#20 memRd = 1'd1; memWr=1'd1;
 				#20 address=32'hffffff04;  inputData16bits=16'h3; memRd = 1'd0; memWr=1'd1; writeWord = 1'b1;
@@ -2064,7 +1452,6 @@ module cacheBench;
 				#20 address=32'hfafffe0a;  inData= 128'h2345 ;memRd = 1'd0; memWr=1'd1;
 				#20 address=32'hfbfffe0a;  inData= 128'h4567 ;memRd = 1'd0; memWr=1'd1;
 				#20 address=32'hfbfffe1a;  inData= 128'h4567 ;memRd = 1'd0; memWr=1'd1;
-
 				#100 $finish;
 				end
 endmodule
